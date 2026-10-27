@@ -1,0 +1,8 @@
+# Eventos das turmas (gerados pelo servidor)
+dados/
+
+# Apresentações e capturas de tela: não vão para o repositório público
+*.pptx
+*.png
+
+node_modules/

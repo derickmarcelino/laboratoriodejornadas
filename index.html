@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FCFC30">
+<title>Missão Cliente</title>
+<style>
+/* Paleta Banco do Brasil: amarelo #FCFC30 e azul #465EFF, com neutros de apoio */
+:root{
+  --amarelo:#FCFC30;--amarelo-claro:#FEFED6;--amarelo-texto:#5C5600;
+  --azul:#465EFF;--azul-esc:#2338C8;--marinho:#152173;--info-bg:#ECEFFF;
+  --bg:#F2F3F5;--card:#fff;--ink:#1B1F2A;--muted:#5E6472;--line:#DDE0E6;
+  --erro:#C8232C;--erro-bg:#FCEBEC;--ok:#0F7B53;--ok-bg:#E5F4EE;--alerta:#A35200;--alerta-bg:#FDF0E1;
+  --odi:var(--azul);--rot:var(--marinho);--esc:#6B46C1;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+#root{max-width:480px;margin:0 auto;min-height:100dvh;position:relative;background:var(--bg)}
+button{font:inherit;cursor:pointer;color:inherit}
+svg.ico{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* Telas de abertura (início, missão sorteada) */
+.topo{background:var(--amarelo);color:var(--marinho);padding:14px 20px;font-weight:700;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.topo small{font-weight:400;font-size:13px;opacity:.8}
+.pagina{padding:24px 20px 40px}
+.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--azul);font-weight:700}
+h1{font-size:30px;line-height:1.12;margin:8px 0 12px;letter-spacing:-.02em;color:var(--marinho)}
+h2{font-size:21px;line-height:1.2;margin:0 0 8px;color:var(--marinho)}
+h3{font-size:15px;margin:18px 0 8px}
+.lead{color:var(--muted);font-size:16px;margin:0 0 20px}
+.btn{display:block;width:100%;border:0;border-radius:8px;padding:14px 18px;font-weight:700;font-size:16px;background:var(--azul);color:#fff;text-align:center}
+.btn:active{background:var(--azul-esc)}
+.btn.azul{background:var(--azul);color:#fff}
+.btn.ghost,.btn.sec{background:#fff;color:var(--azul);border:1.5px solid var(--azul)}
+.btn.ghost{margin-top:10px}
+.btn[disabled]{opacity:.5}
+.passos{list-style:none;padding:0;margin:24px 0 0;display:grid;gap:8px}
+.passos li{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:15px}
+.passos b{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:4px;background:var(--amarelo);color:var(--marinho);font-size:13px}
+.slot{margin:20px 0;min-height:96px;border-radius:8px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--amarelo);display:grid;place-items:center;text-align:center;font-size:20px;font-weight:700;color:var(--marinho);padding:14px}
+.slot small{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.mcard{background:#fff;border:1px solid var(--line);border-top:6px solid var(--amarelo);border-radius:8px;padding:20px 18px;margin:14px 0 20px}
+.mcard .ctx{color:var(--muted);margin:10px 0 14px}
+.produto{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:4px;background:var(--info-bg);color:var(--azul-esc);margin-bottom:10px}
+.obj{background:var(--amarelo-claro);border:1px solid #E8E39A;border-radius:6px;padding:12px 14px;font-weight:600;color:var(--marinho)}
+.obj small{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--amarelo-texto);margin-bottom:2px}
+.apel{display:block;margin:0 0 12px}
+.apel span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.apel input{width:100%;font:inherit;padding:12px 14px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+.apel input:focus{outline:none;border-color:var(--azul)}
+
+/* Barra da missão + app simulado */
+.mbar{background:var(--marinho);color:#fff;padding:10px 16px;font-size:13px;display:flex;gap:10px;align-items:flex-start;border:0;width:100%;text-align:left;position:sticky;top:0;z-index:5}
+.mbar .rot{font-size:11px;font-weight:700;letter-spacing:.06em;background:var(--amarelo);color:var(--marinho);padding:2px 6px;border-radius:3px;flex:none;margin-top:1px}
+.mbar .t{flex:1}
+.mbar .t span{display:block;color:#C4CAF0;margin-top:4px}
+.app{position:relative;min-height:calc(100dvh - 40px);background:var(--bg);display:flex;flex-direction:column}
+.ahead{background:var(--amarelo);color:var(--marinho);display:flex;align-items:center;gap:8px;padding:10px 12px}
+.ahead .tt{flex:1;font-weight:700;font-size:17px;line-height:1.15}
+.ahead .tt small{display:block;font-weight:400;font-size:12px;opacity:.8}
+.ib{border:0;background:rgba(21,33,115,.08);border-radius:6px;min-width:38px;height:38px;font-size:18px;font-weight:700;color:var(--marinho);padding:0 10px}
+.abody{padding:16px;flex:1}
+.hello{font-size:19px;font-weight:700;margin:4px 0 2px;color:var(--marinho)}
+.hello small{display:block;font-size:13px;color:var(--muted);font-weight:400}
+.saldo{background:var(--azul);color:#fff;border-radius:8px;padding:14px 16px;margin:14px 0 16px}
+.saldo span{font-size:13px;opacity:.9}.saldo b{display:block;font-size:24px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{border:1px solid var(--line);background:#fff;border-radius:8px;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.tile svg{color:var(--azul)}
+.link{display:block;margin:22px auto 0;background:none;border:0;color:var(--azul);font-weight:700;text-decoration:underline}
+.txt{margin:0 0 14px;white-space:pre-line}
+.aviso{border-radius:6px;padding:12px 14px;margin:0 0 14px;font-weight:600;font-size:14px;background:var(--info-bg);color:var(--azul-esc);border-left:4px solid var(--azul)}
+.aviso.erro{background:var(--erro-bg);color:var(--erro);border-color:var(--erro)}
+.linhas{background:#fff;border:1px solid var(--line);border-radius:8px;padding:2px 14px;margin:0 0 14px}
+.linhas div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.linhas div:last-child{border:0}
+.linhas span{color:var(--muted)}.linhas b{text-align:right}
+.campo{display:block;margin:0 0 12px}
+.campo span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.campo input{width:100%;font:inherit;padding:12px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+.campo input:focus{outline:none;border-color:var(--azul)}
+.acoes{display:grid;gap:10px;margin-top:6px}
+.item{border:1px solid var(--line);background:#fff;border-radius:8px;padding:13px 14px;display:flex;align-items:center;gap:10px;text-align:left;width:100%}
+.item .it{flex:1;font-weight:600}.item .it small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.item::after{content:"›";font-size:22px;color:var(--azul)}
+.vazio-app{text-align:center;padding:40px 10px;color:var(--muted)}
+.vazio-app svg{width:44px;height:44px;color:var(--azul)}
+.ov{position:absolute;inset:0;background:rgba(21,33,115,.5);display:grid;place-items:center;padding:24px;z-index:4}
+.modal{background:#fff;border-radius:8px;padding:22px 20px;width:100%;max-width:360px;text-align:center}
+.modal .alerta{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--erro-bg);color:var(--erro);font-weight:800;font-size:22px}
+.modal b{display:block;margin-top:10px}.modal p{margin:8px 0 6px}.modal code{font-size:11px;color:var(--muted)}
+.modal .btn{margin-top:16px}
+.spin{width:40px;height:40px;border-radius:50%;border:4px solid rgba(255,255,255,.3);border-top-color:var(--amarelo);animation:r 0.8s linear infinite;margin:0 auto 10px}
+.ovl{color:#fff;text-align:center;font-weight:600}
+@keyframes r{to{transform:rotate(360deg)}}
+
+/* Chat */
+.chat{display:flex;flex-direction:column;min-height:100dvh;background:var(--bg)}
+.chead{background:var(--amarelo);color:var(--marinho);display:flex;gap:10px;align-items:center;padding:10px 14px}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:800;background:var(--marinho);color:#fff;flex:none}
+.av.ia{background:var(--azul)}
+.chead b{display:block;font-size:15px;line-height:1.2}.chead small{font-size:12px;font-weight:600;color:var(--ok)}
+.msgs{flex:1;padding:16px 12px 8px;display:flex;flex-direction:column;gap:8px}
+.b{max-width:84%;padding:10px 13px;border-radius:10px;font-size:15px;white-space:pre-line;word-wrap:break-word}
+.b.ag{background:#fff;border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:2px}
+.b.cl{background:var(--azul);color:#fff;align-self:flex-end;border-bottom-right-radius:2px}
+.b .nm{display:block;font-size:11px;font-weight:700;color:var(--marinho);margin-bottom:2px}
+.sys{align-self:center;font-size:12px;color:var(--muted);padding:2px 10px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);text-align:center}
+.typing{display:inline-flex;gap:4px}.typing i{width:7px;height:7px;border-radius:50%;background:#9AA0AC;animation:d 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes d{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.cfoot{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+.chip{flex:none;border:1.5px solid var(--azul);background:#fff;color:var(--azul);border-radius:6px;padding:6px 11px;font-size:13px;font-weight:600}
+.cform{display:flex;gap:8px;align-items:flex-end}
+.cform textarea{flex:1;font:inherit;font-size:16px;resize:none;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;max-height:120px;min-height:44px}
+.cform textarea:focus{outline:none;border-color:var(--azul)}
+.send{border:0;background:var(--azul);color:#fff;width:46px;height:44px;border-radius:8px;flex:none;display:grid;place-items:center}
+.dica{font-size:12px;color:var(--muted);margin:6px 2px 0}
+.stars{display:flex;justify-content:center;gap:6px}
+.stars button{border:1.5px solid var(--azul);background:#fff;border-radius:8px;width:54px;height:50px;font-size:20px;font-weight:700;color:var(--azul)}
+
+/* Revelação */
+.rev{background:var(--bg);min-height:100dvh}
+.rhero{background:var(--amarelo);color:var(--marinho);padding:24px 20px 22px}
+.rhero .kicker{color:var(--marinho);opacity:.8}
+.rhero h1{font-size:26px}
+.rhero .lead{color:var(--marinho);opacity:.85;margin:0}
+.rnav{position:sticky;top:0;z-index:3;display:flex;background:#fff;border-bottom:1px solid var(--line)}
+.rnav a{flex:1;text-align:center;text-decoration:none;font-size:13px;font-weight:700;padding:12px 4px 10px;color:var(--muted);border-bottom:3px solid var(--c)}
+.sol{margin:16px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px 16px;border-top:5px solid var(--c);scroll-margin-top:56px}
+.sol .tag{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.sol h2{margin-top:4px}
+.sol .desc{color:var(--muted);margin:0 0 14px;font-size:15px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.kpi{background:var(--bg);border-radius:6px;padding:10px 12px}
+.kpi b{display:block;font-size:22px;line-height:1.1;color:var(--marinho)}.kpi span{font-size:12px;color:var(--muted)}
+.kpi.alerta b{color:var(--erro)}
+.destaque{border-radius:6px;padding:12px 14px;background:var(--bg);border-left:4px solid var(--c);font-size:14px;margin:12px 0}
+.tl{list-style:none;margin:8px 0 0;padding:0}
+.tl li{display:grid;grid-template-columns:42px 92px 1fr;gap:6px;padding:6px 0;font-size:13px;border-bottom:1px solid #EEF0F3}
+.tl time{color:var(--muted);font-variant-numeric:tabular-nums}
+.et{display:inline-block;font-size:11px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;align-self:start}
+.t-azul{background:var(--info-bg);color:var(--azul-esc)}.t-marinho{background:#E6E8F3;color:var(--marinho)}
+.t-amarelo{background:var(--amarelo-claro);color:var(--amarelo-texto);box-shadow:inset 0 0 0 1px #E8E39A}
+.t-erro{background:var(--erro-bg);color:var(--erro)}.t-ok{background:var(--ok-bg);color:var(--ok)}
+.t-alerta{background:var(--alerta-bg);color:var(--alerta)}.t-cinza{background:#EDEEF1;color:var(--muted)}
+.bar{height:8px;border-radius:3px;background:#E6E8EC;overflow:hidden;margin:4px 0 10px}
+.bar i{display:block;height:100%;background:var(--c)}
+.lbl{display:flex;justify-content:space-between;font-size:13px}
+.quote{border-left:4px solid var(--c);background:var(--bg);padding:10px 12px;border-radius:0 6px 6px 0;margin:8px 0 12px}
+.dest{display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:6px;padding:12px}
+.chg{display:flex;align-items:center;gap:10px;margin:10px 0}
+.chg .s{flex:1;background:var(--bg);border-radius:6px;padding:10px;text-align:center}
+.chg .s b{display:block;font-size:24px}.chg .s span{font-size:12px;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tags span{font-size:12px;padding:2px 8px;border-radius:3px;font-weight:600}
+.tags .n{background:var(--erro-bg);color:var(--erro)}.tags .p{background:var(--ok-bg);color:var(--ok)}
+.um{background:var(--bg);border-radius:6px;padding:10px 12px;margin:8px 0;font-size:14px}
+.um .sc{float:right;margin-left:8px}
+.sol svg text{font:11px "Segoe UI",system-ui,sans-serif;fill:var(--muted)}
+
+/* ===== Jogo: roleta, ficha da missão, contagem, confete, XP ===== */
+.roda-wrap{position:relative;margin:6px auto 0;max-width:340px}
+.roda{width:100%;display:block;filter:drop-shadow(0 10px 18px rgba(21,33,115,.28))}
+.roda text{font-family:"Segoe UI",system-ui,sans-serif;font-weight:800}
+.luz{fill:#FEFED6;opacity:.35}
+.girando .luz{animation:pisca .24s steps(1) infinite}.girando .luz.b{animation-delay:.12s}
+.parou .luz{animation:pisca .4s steps(1) 6}
+@keyframes pisca{50%{opacity:1;fill:var(--amarelo)}}
+.resultado{min-height:58px;margin:6px 0 10px;text-align:center;font-weight:800;font-size:22px;color:var(--marinho);opacity:0;transform:scale(.6);transition:.4s cubic-bezier(.2,1.6,.4,1)}
+.resultado.on{opacity:1;transform:none}
+.resultado small{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--azul)}
+.btn.grande{font-size:18px;padding:16px;box-shadow:0 4px 0 var(--azul-esc);margin-bottom:4px}
+.btn.grande:active{transform:translateY(3px);box-shadow:0 1px 0 var(--azul-esc)}
+.regras{list-style:none;padding:0;margin:22px 0 0;border:1px solid var(--line);border-radius:8px;background:#fff}
+.regras li{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.regras li:last-child{border:0}
+.regras b{color:var(--ok);white-space:nowrap}
+.regras .t{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.dossie{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:4px 0 18px}
+.dossie.entra{animation:entra .6s cubic-bezier(.2,1.3,.4,1)}
+@keyframes entra{from{transform:translateY(50px) scale(.94);opacity:0}}
+.dhead{background:var(--marinho);color:#fff;display:flex;justify-content:space-between;padding:10px 16px;font-size:12px;font-weight:700;letter-spacing:.08em}
+.dhead b{color:var(--amarelo)}
+.dbody{padding:18px 16px;position:relative}
+.codinome{font-size:27px;margin:2px 0;padding-right:96px}
+.sub{color:var(--muted);font-weight:600}
+.carimbo{position:absolute;top:18px;right:12px;border:3px solid var(--erro);color:var(--erro);font-weight:900;font-size:12px;letter-spacing:.08em;padding:4px 8px;border-radius:4px;transform:rotate(-12deg);text-align:center;line-height:1.15;background:rgba(255,255,255,.85)}
+.entra .carimbo{animation:carimbo .45s .5s cubic-bezier(.2,1.8,.4,1) both}
+@keyframes carimbo{from{transform:rotate(-12deg) scale(3.2);opacity:0}}
+.ficha{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:16px 0}
+.ficha div{background:#fff;padding:9px 12px}
+.ficha div>span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.ficha b{font-size:14px}
+.medidor{display:inline-flex;gap:3px;vertical-align:1px;margin-right:6px}
+.medidor i{width:14px;height:8px;border-radius:2px;background:#E2E4EA}
+.medidor i.on{background:var(--azul)}.medidor.urg i.on{background:var(--erro)}
+.contagem{position:fixed;inset:0;z-index:50;background:var(--marinho);display:grid;place-items:center;align-content:center;gap:14px;color:#fff;text-align:center;padding:20px}
+.contagem b{font-size:130px;font-weight:900;color:var(--amarelo);line-height:1;animation:pulso .8s ease-out}
+.contagem b.go{font-size:58px}
+.contagem span{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:#C4CAF0}
+@keyframes pulso{from{transform:scale(2.4);opacity:0}40%{opacity:1}}
+.confete{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.confete i{position:absolute;top:-16px;width:8px;height:14px;border-radius:2px;animation:cai linear forwards}
+@keyframes cai{to{transform:translateY(112vh) rotate(760deg)}}
+.fixo{position:sticky;top:0;z-index:5}
+.fixo .mbar{position:static}
+.cron{font-variant-numeric:tabular-nums;font-weight:800;color:var(--amarelo);flex:none;font-size:15px}
+.prog{display:flex;gap:4px;padding:2px 16px 8px;background:var(--marinho)}
+.prog i{flex:1;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8E97D6;border-top:3px solid #2C3A8F;padding-top:4px}
+.prog i.on{color:var(--amarelo);border-color:var(--amarelo)}
+.selo{display:inline-block;border:3px solid var(--ok);color:var(--ok);background:#fff;font-weight:900;font-size:13px;letter-spacing:.08em;padding:4px 10px;border-radius:4px;transform:rotate(-4deg);margin-bottom:12px;animation:carimbo2 .5s cubic-bezier(.2,1.8,.4,1) both}
+@keyframes carimbo2{from{transform:rotate(-4deg) scale(3);opacity:0}}
+.xp{display:flex;align-items:baseline;gap:6px;color:var(--marinho)}
+.xp b{font-size:60px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.xp span{font-weight:800;font-size:20px}
+.nivel{font-size:15px;margin:4px 0 14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.stats div{background:rgba(255,255,255,.6);border-radius:6px;padding:8px;text-align:center}
+.stats b{display:block;font-size:20px}
+.stats span{font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.rk{background:#fff;border-radius:8px;padding:14px;margin:0 0 20px;color:var(--ink)}
+.rk-topo{text-align:center;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.rk-topo span{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.rk-topo b{display:inline-flex;align-items:center;gap:8px;font-size:48px;font-weight:900;line-height:1.1;color:var(--marinho)}
+.rk-topo small{display:block;font-size:13px;color:var(--muted)}
+.rk-mov{font-size:12px;font-weight:700;padding:2px 6px;border-radius:3px}
+.rk-mov.sobe{background:var(--ok-bg);color:var(--ok)}.rk-mov.desce{background:var(--erro-bg);color:var(--erro)}
+.rk-msg{text-align:center;font-weight:700;color:var(--azul);margin:10px 0 4px}
+.rk-lista{list-style:none;margin:8px 0 0;padding:0}
+.rk-lista li{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid #EEF0F3;font-size:14px}
+.rk-lista li.eu{background:var(--amarelo-claro);box-shadow:inset 4px 0 0 var(--amarelo);border-radius:4px}
+.rk-lista li.rk-sep{justify-content:center;color:var(--muted);padding:2px}
+.rk-n{display:inline-grid;place-items:center;min-width:30px;height:26px;border-radius:4px;background:#EDEEF1;font-weight:800;font-size:12px}
+.rk-n.p1{background:var(--amarelo);color:var(--marinho);box-shadow:inset 0 0 0 1px #D9D200}.rk-n.p2{background:var(--azul);color:#fff}.rk-n.p3{background:var(--marinho);color:#fff}
+.rk-nm{flex:1;min-width:0}.rk-nm b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rk-nm small{color:var(--muted);font-size:12px}
+.rk-xp{color:var(--marinho);white-space:nowrap}
+.rk-off{font-size:13px;color:var(--muted);text-align:center;margin:0}
+.fim{margin:20px 16px 36px;text-align:center}
+.codigo{display:inline-block;background:var(--marinho);color:var(--amarelo);font-weight:700;letter-spacing:.04em;border-radius:6px;padding:10px 16px;margin:8px 0 18px;font-size:17px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="missoes.js"></script>
+<script>
+/* =========================================================
+   ESCUTAI — léxico de sentimento e emoção (PT-BR, sem acento)
+   [polaridade -1..1, emoção]
+   ========================================================= */
+const LEX = {
+  'pessim':[-.9,'raiva'],'horrivel':[-.9,'raiva'],'absurd':[-.8,'raiva'],'ridicul':[-.8,'raiva'],'lixo':[-.9,'raiva'],'raiva':[-.8,'raiva'],
+  'irritad':[-.7,'raiva'],'irritant':[-.7,'raiva'],'revolt':[-.8,'raiva'],'odeio':[-.9,'raiva'],'descaso':[-.8,'raiva'],'palhacada':[-.8,'raiva'],
+  'inadmissivel':[-.8,'raiva'],'inaceitavel':[-.8,'raiva'],'pqp':[-.8,'raiva'],'merda':[-.8,'raiva'],'porcaria':[-.8,'raiva'],'vergonhoso':[-.8,'raiva'],'sacanagem':[-.7,'raiva'],
+  'ruim':[-.6,'frustracao'],'frustr':[-.7,'frustracao'],'chatead':[-.6,'frustracao'],'cansad':[-.5,'frustracao'],'cansativ':[-.5,'frustracao'],'demor':[-.5,'frustracao'],
+  'lento':[-.4,'frustracao'],'lenta':[-.4,'frustracao'],'trava':[-.5,'frustracao'],'travou':[-.5,'frustracao'],'travad':[-.5,'frustracao'],'erro':[-.4,'frustracao'],
+  'problema':[-.4,'frustracao'],'falh':[-.4,'frustracao'],'dificil':[-.4,'frustracao'],'burocr':[-.5,'frustracao'],'impossivel':[-.6,'frustracao'],'chato':[-.5,'frustracao'],
+  'aff':[-.5,'frustracao'],'afe':[-.5,'frustracao'],'droga':[-.5,'frustracao'],'saco':[-.5,'frustracao'],'negad':[-.3,'frustracao'],'recusad':[-.3,'frustracao'],
+  'tempao':[-.5,'frustracao'],'enrolac':[-.6,'frustracao'],'loop':[-.4,'frustracao'],'perdi tempo':[-.6,'frustracao'],'perdi um tempo':[-.6,'frustracao'],
+  'nao consigo':[-.6,'frustracao'],'nao consegui':[-.6,'frustracao'],'nao funciona':[-.6,'frustracao'],'nao funcionou':[-.6,'frustracao'],'nao deu':[-.4,'frustracao'],
+  'de novo':[-.3,'frustracao'],'ate agora':[-.3,'frustracao'],'sempre isso':[-.6,'frustracao'],'toda vez':[-.4,'frustracao'],'devia ser':[-.5,'frustracao'],'deveria ser':[-.5,'frustracao'],'poderia ser':[-.4,'frustracao'],
+  'preocup':[-.6,'ansiedade'],'medo':[-.7,'ansiedade'],'nervos':[-.6,'ansiedade'],'desesper':[-.8,'ansiedade'],'urgent':[-.5,'ansiedade'],'urgencia':[-.5,'ansiedade'],
+  'socorro':[-.7,'ansiedade'],'ansios':[-.6,'ansiedade'],'aflit':[-.7,'ansiedade'],'insegur':[-.6,'ansiedade'],'assust':[-.7,'ansiedade'],'receio':[-.5,'ansiedade'],
+  'golpe':[-.5,'ansiedade'],'fraude':[-.5,'ansiedade'],'roubad':[-.6,'ansiedade'],'esperando':[-.4,'ansiedade'],'apavor':[-.8,'ansiedade'],'tenso':[-.5,'ansiedade'],'tensa':[-.5,'ansiedade'],
+  'confus':[-.5,'confusao'],'nao entendi':[-.5,'confusao'],'nao entendo':[-.5,'confusao'],'como assim':[-.4,'confusao'],'perdid':[-.5,'confusao'],'nao sei':[-.3,'confusao'],
+  'estranh':[-.3,'confusao'],'misterios':[-.3,'confusao'],'sem explicacao':[-.5,'confusao'],'complicad':[-.5,'confusao'],
+  'triste':[-.6,'tristeza'],'decepcion':[-.7,'tristeza'],'desanim':[-.6,'tristeza'],'vergonh':[-.6,'tristeza'],'arrepend':[-.5,'tristeza'],'chorar':[-.7,'tristeza'],
+  'alivi':[.7,'alivio'],'ufa':[.6,'alivio'],'finalmente':[.3,'alivio'],'tranquil':[.6,'alivio'],'calma':[.3,'alivio'],'salvou':[.8,'alivio'],'resolv':[.6,'alivio'],
+  'deu certo':[.6,'alivio'],'funcionou':[.6,'alivio'],
+  'otim':[.8,'satisfacao'],'excelente':[.9,'satisfacao'],'perfeit':[.9,'satisfacao'],'maravilh':[.9,'satisfacao'],'bom':[.5,'satisfacao'],'boa':[.5,'satisfacao'],
+  'legal':[.5,'satisfacao'],'gostei':[.7,'satisfacao'],'adorei':[.9,'satisfacao'],'amei':[.9,'satisfacao'],'top':[.7,'satisfacao'],'show':[.6,'satisfacao'],
+  'massa':[.6,'satisfacao'],'rapid':[.5,'satisfacao'],'facil':[.6,'satisfacao'],'simples':[.4,'satisfacao'],'pratic':[.6,'satisfacao'],'eficien':[.7,'satisfacao'],
+  'incrivel':[.9,'satisfacao'],'feliz':[.8,'satisfacao'],'satisfeit':[.8,'satisfacao'],'sensacional':[.9,'satisfacao'],'beleza':[.4,'satisfacao'],'pode ser':[.2,'satisfacao'],
+  'pode seguir':[.3,'satisfacao'],'nota 10':[.9,'satisfacao'],'ok':[.1,'satisfacao'],'claro':[.2,'satisfacao'],'educad':[.6,'satisfacao'],
+  'obrigad':[.6,'gratidao'],'valeu':[.6,'gratidao'],'agradec':[.7,'gratidao'],'grato':[.7,'gratidao'],'grata':[.7,'gratidao'],'gratidao':[.7,'gratidao'],
+  'ajudou':[.6,'gratidao'],'atencios':[.7,'gratidao'],'prestativ':[.7,'gratidao']
+};
+const EMOJIS = {'😡':[-.9,'raiva'],'😠':[-.8,'raiva'],'🤬':[-.9,'raiva'],'😤':[-.6,'frustracao'],'🙄':[-.5,'frustracao'],'😩':[-.6,'frustracao'],'😫':[-.6,'frustracao'],
+  '😢':[-.6,'tristeza'],'😭':[-.7,'tristeza'],'😞':[-.5,'tristeza'],'😰':[-.7,'ansiedade'],'😱':[-.7,'ansiedade'],'😨':[-.6,'ansiedade'],'🤔':[-.2,'confusao'],
+  '🙂':[.4,'satisfacao'],'😊':[.6,'satisfacao'],'😀':[.6,'satisfacao'],'😁':[.6,'satisfacao'],'😄':[.7,'satisfacao'],'👍':[.5,'satisfacao'],'👏':[.6,'satisfacao'],
+  '❤':[.7,'satisfacao'],'😍':[.8,'satisfacao'],'🥰':[.8,'satisfacao'],'🙏':[.6,'gratidao'],'😅':[.2,'alivio'],'😌':[.6,'alivio']};
+const NEG = new Set(['nao','nunca','nem','jamais']);
+const INTENS = new Set(['muito','super','mega','bem','extremamente','totalmente','tao','mt','mto','bastante','ultra','pouco']);
+const LEX_FRASES = Object.keys(LEX).filter(k=>k.includes(' ')).sort((a,b)=>b.split(' ').length-a.split(' ').length);
+const LEX_PAL = Object.keys(LEX).filter(k=>!k.includes(' ')).sort((a,b)=>b.length-a.length);
+
+/* ===================== utilitários ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const tokens = s => norm(s).replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(Boolean);
+const casa = (tok,k) => k.length<=3 ? tok===k : tok.startsWith(k);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const mmss = ms => { const s=Math.max(0,Math.round(ms/1000)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+const pct = x => Math.round(x*100)+'%';
+const trunc = (s,n) => s.length>n ? s.slice(0,n-1)+'…' : s;
+
+const KEY='missao-cliente-v1';
+const UI = {modal:null,loading:false,busy:false,typing:null,mbar:false};
+let S = carregar();
+function estadoNovo(){ return {view:'inicio',missao:null,t0:null,eventos:[],tela:null,cliques:{},msgs:[],stage:null,rot:null,agente:null,nota:null,esclareceu:false,explicou:false,sid:null,seq:0,fila:[]}; }
+function carregar(){
+  try{
+    const p=new URLSearchParams(location.search);
+    if(p.has('reset')) localStorage.removeItem(KEY);
+    const s=JSON.parse(localStorage.getItem(KEY)||'null');
+    return s && s.view ? s : estadoNovo();
+  }catch(e){ return estadoNovo(); }
+}
+function salvar(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+const M = () => MISSOES.find(m=>m.id===S.missao);
+const agora = () => Date.now()-S.t0;
+function odi(tipo,desc,extra){ const e=Object.assign({t:agora(),tipo,desc},extra||{}); S.eventos.push(e); transmitir(e); salvar(); }
+
+/* ===================== PAINEL: envio dos eventos ao servidor =====================
+   Cada evento entra numa fila salva no aparelho e é reenviado até o servidor confirmar.
+   Aberta como arquivo local (sem servidor), a página funciona normalmente, só não aparece no painel. */
+const ONLINE = location.protocol.startsWith('http');
+function apelido(){ try{ return localStorage.getItem(KEY+'-apelido')||''; }catch(e){ return ''; } }
+function transmitir(e){
+  if(!S.sid) return;
+  S.seq=(S.seq||0)+1;
+  (S.fila=S.fila||[]).push(Object.assign({id:S.sid+'-'+S.seq,sid:S.sid,apelido:apelido(),missao:S.missao,ts:Date.now()},e));
+  salvar(); despachar();
+}
+let enviando=false;
+async function despachar(){
+  if(!ONLINE||enviando||!S.fila||!S.fila.length) return;
+  enviando=true;
+  const lote=S.fila.slice(0,50);
+  try{
+    const r=await fetch('api/eventos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(lote),keepalive:true});
+    if(r.ok){ const ids=new Set(lote.map(x=>x.id)); S.fila=S.fila.filter(x=>!ids.has(x.id)); salvar(); }
+  }catch(err){}
+  enviando=false;
+  if(S.fila.length) setTimeout(despachar,300);
+}
+setInterval(despachar,3000);
+function pushMsg(x){
+  S.msgs.push(x);
+  const extra={de:x.de,nome:x.nome||null,txt:x.txt,fase:x.fase||null};
+  if(x.de==='cliente' && x.fase!=='nota'){ const s=sentimento(x.txt); extra.score=+s.score.toFixed(3); extra.emo=s.emo; extra.termos=s.achados.map(a=>({termo:a.termo,p:+a.p.toFixed(2),e:a.e})); }
+  transmitir(Object.assign({t:x.t,tipo:'msg',desc:x.txt},extra));
+}
+
+/* ===================== ESCUTAI: análise ===================== */
+function sentimento(txt){
+  // "|" marca fim de oração: a negação não atravessa vírgula ou ponto
+  const toks=norm(txt).replace(/[.,;:!?…]+/g,' | ').replace(/[^a-z0-9|\s]/g,' ').split(/\s+/).filter(Boolean);
+  let soma=0; const emo={}; const achados=[];
+  let livre=0, hipoteseAte=-1; // "livre": negação não atravessa termos já consumidos; "hipotese": "devia ser mais fácil" não é elogio
+  for(let i=0;i<toks.length;i++){
+    let hit=null,len=1;
+    for(const f of LEX_FRASES){ const fp=f.split(' '); if(fp.every((w,j)=>toks[i+j]!==undefined && casa(toks[i+j],w))){ hit=f; len=fp.length; break; } }
+    if(!hit) hit=LEX_PAL.find(k=>casa(toks[i],k))||null;
+    if(!hit) continue;
+    let [p,e]=LEX[hit];
+    if(p>0 && i<=hipoteseAte){ livre=i+len; i+=len-1; continue; }
+    if(/^(devia|deveria|poderia) ser$/.test(hit)) hipoteseAte=i+len+2;
+    let antes=toks.slice(Math.max(livre,i-3),i);
+    if(antes.includes('|')) antes=antes.slice(antes.lastIndexOf('|')+1);
+    livre=i+len;
+    const negado=!hit.startsWith('nao ') && antes.some(w=>NEG.has(w));
+    let mult=1;
+    if(antes.slice(-2).some(w=>INTENS.has(w)) || toks[i+len]==='demais') mult=1.5;
+    if(negado){ p=-p*0.6; e=p<0?'frustracao':'alivio'; }
+    p*=mult; soma+=p; emo[e]=(emo[e]||0)+Math.abs(p);
+    achados.push({termo:toks.slice(i,i+len).join(' '),p,e});
+    i+=len-1;
+  }
+  for(const [em,[p,e]] of Object.entries(EMOJIS)){
+    const c=txt.split(em).length-1;
+    if(c){ soma+=p*Math.min(c,2); emo[e]=(emo[e]||0)+Math.abs(p); achados.push({termo:em,p,e}); }
+  }
+  const exc=(txt.match(/!/g)||[]).length; if(exc) soma*=1+Math.min(exc,3)*0.1;
+  const caps=(txt.match(/[A-ZÁÉÍÓÚÂÊÔÃÕÇ]{4,}/g)||[]).length; if(caps && soma<0) soma*=1.25;
+  return {score:Math.tanh(soma/1.2),emo,achados};
+}
+const rotulo = s => s<=-0.6?'Muito negativo':s<=-0.2?'Negativo':s<0.2?'Neutro':s<0.6?'Positivo':'Muito positivo';
+const corSent = s => s<=-0.2?'var(--erro)':s<0.2?'#8A8FA8':'var(--ok)';
+const fmtS = s => (s>0?'+':'')+s.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const etSent = s => `<span class="et ${s<=-0.2?'t-erro':s<0.2?'t-cinza':'t-ok'}">${rotulo(s)} ${fmtS(s)}</span>`;
+function emocaoDominante(emo){ const k=Object.keys(emo).sort((a,b)=>emo[b]-emo[a])[0]; return k||null; }
+
+/* ===================== ROTEAMENTO: classificação ===================== */
+function classificar(txt){
+  const toks=tokens(txt), frase=' '+toks.join(' ')+' ';
+  const texto={},termos={},jornada={};
+  for(const [id,it] of Object.entries(INTENCOES)){
+    let s=0; termos[id]=[];
+    for(const [k,w] of Object.entries(it.kw)){
+      const ok = k.includes(' ') ? frase.includes(' '+k) : toks.some(t=>casa(t,k));
+      if(ok){ s+=w; termos[id].push(k); }
+    }
+    texto[id]=s;
+  }
+  // Sinal da jornada (Odisseia): telas visitadas no app indicam o assunto
+  const m=M();
+  if(S.eventos.some(e=>e.tipo==='tela' && m.telas[e.tela])) jornada[m.intencao]=2.5;
+  const tot={}; for(const id in texto) tot[id]=texto[id]+(jornada[id]||0);
+  const ord=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]);
+  const soma=Object.values(tot).reduce((a,b)=>a+b,0);
+  const top=soma>0?ord[0]:m.intencao;
+  const conf=soma>0?Math.min(0.97,tot[top]/(soma+0.4)):0.5;
+  return {top,conf,alt:ord.slice(0,3).map(id=>({id,p:soma?tot[id]/(soma+0.4):0})),
+          sinalTexto:texto[top],sinalJornada:jornada[top]||0,termos:termos[top]};
+}
+
+/* ===================== RENDER ===================== */
+function render(){
+  const r=$('#root'); const inp=$('#msg'); const rasc=inp?inp.value:'';
+  if(S.view==='inicio') r.innerHTML=vInicio();
+  else if(S.view==='briefing') r.innerHTML=vBriefing();
+  else if(S.view==='app') r.innerHTML=vApp();
+  else if(S.view==='chat'){ r.innerHTML=vChat(); const i2=$('#msg'); if(i2&&rasc) i2.value=rasc; window.scrollTo(0,document.body.scrollHeight); }
+  else if(S.view==='revelacao'){
+    r.innerHTML=vRevelacao();
+    // Contador de XP subindo
+    const el=$('#xp'), alvo=+el.dataset.v, t0=performance.now();
+    const passo=t=>{ const x=Math.min(1,(t-t0)/1400); el.textContent=Math.round(alvo*(1-Math.pow(1-x,3))); if(x<1) requestAnimationFrame(passo); };
+    requestAnimationFrame(passo);
+    if(!UI.rank) carregarRanking();
+  }
+}
+
+/* ===================== JOGO: roleta, ficha, contagem, sons ===================== */
+const num2 = n => String(n).padStart(2,'0');
+function roletaSVG(){
+  const cores=['var(--amarelo)','var(--azul)','var(--marinho)'];
+  const R=100, pt=a=>[Math.sin(a*Math.PI/180)*R,-Math.cos(a*Math.PI/180)*R].map(v=>v.toFixed(2)).join(' ');
+  const fatias=MISSOES.map((m,k)=>{
+    const a=k*30, cor=cores[k%3], tx=k%3===0?'var(--marinho)':'#fff';
+    return `<path d="M0 0 L${pt(a-15)} A${R} ${R} 0 0 1 ${pt(a+15)} Z" style="fill:${cor}" stroke="#fff" stroke-width="1.2"/>
+      <g transform="rotate(${a})"><text x="0" y="-84" text-anchor="middle" style="fill:${tx};font-size:10px">${num2(k+1)}</text>
+      <text transform="translate(0 -48) rotate(-90)" text-anchor="middle" dominant-baseline="middle" style="fill:${tx};font-size:8.6px;letter-spacing:.4px">${esc(m.rotulo)}</text></g>`;
+  }).join('');
+  const luzes=Array.from({length:24},(_,i)=>{ const a=i*15*Math.PI/180; return `<circle cx="${(Math.sin(a)*109).toFixed(1)}" cy="${(-Math.cos(a)*109).toFixed(1)}" r="2.8" class="luz ${i%2?'b':''}"/>`; }).join('');
+  return `<div class="roda-wrap" id="roda-wrap"><svg class="roda" viewBox="-120 -124 240 244" role="img" aria-label="Roleta com as 12 missões">
+    <circle r="117" style="fill:var(--marinho)"/>${luzes}
+    <g id="roda" style="transform:rotate(${UI.rot||0}deg)">${fatias}</g>
+    <circle r="21" style="fill:var(--marinho)" stroke="var(--amarelo)" stroke-width="3"/>
+    <text text-anchor="middle" dominant-baseline="middle" style="fill:var(--amarelo);font-size:8px;letter-spacing:.6px">MISSÃO</text>
+    <path d="M0 -96 L-10 -120 L10 -120 Z" style="fill:var(--amarelo)" stroke="var(--marinho)" stroke-width="2.5" stroke-linejoin="round"/>
+  </svg></div>`;
+}
+const medidor=(n,cls)=>`<span class="medidor ${cls||''}">${[1,2,3].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span>${['Baixa','Média','Alta'][n-1]}`;
+function confete(){
+  const cores=['#FCFC30','#465EFF','#152173','#FCFC30','#FFFFFF'];
+  return `<div class="confete">${Array.from({length:46},(_,i)=>`<i style="left:${(Math.random()*100).toFixed(1)}%;background:${cores[i%cores.length]};animation-duration:${(1.8+Math.random()*1.8).toFixed(2)}s;animation-delay:${(Math.random()*.6).toFixed(2)}s;transform:rotate(${Math.round(Math.random()*180)}deg)"></i>`).join('')}</div>`;
+}
+let AC=null;
+function tom(freq,ini,dur,vol,tipo){
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type=tipo||'sine'; o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,ini); g.gain.exponentialRampToValueAtTime(0.0001,ini+dur);
+  o.connect(g).connect(AC.destination); o.start(ini); o.stop(ini+dur);
+}
+function som(tipo){
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime;
+    if(tipo==='tick') tom(1500,t,.03,.05,'square');
+    else if(tipo==='beep') tom(660,t,.18,.15);
+    else if(tipo==='go'){ tom(880,t,.12,.15); tom(1320,t+.1,.35,.15); }
+    else if(tipo==='vitoria') [523,659,784,1047].forEach((f,i)=>tom(f,t+i*.09,.22,.12,'triangle'));
+    else if(tipo==='carimbo') tom(110,t,.25,.35,'triangle');
+  }catch(e){}
+}
+const vibrar=p=>{ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} };
+
+function vInicio(){
+  return `<div class="topo">Central de Missões<small>Workshop</small></div>
+  <div class="pagina">
+    <div class="kicker">Convocação</div>
+    <h1>Hoje, você é o cliente</h1>
+    <p class="lead">Gire a roleta e receba uma missão real. Enfrente os obstáculos do app, peça ajuda do seu jeito e acumule XP.</p>
+    ${roletaSVG()}
+    <div class="resultado" id="resultado"></div>
+    <label class="apel"><span>Seu nome de agente (aparece no ranking da turma)</span><input id="apelido" maxlength="20" placeholder="Seu nome ou apelido" value="${esc(apelido())}"></label>
+    <button class="btn grande" data-a="sortear" id="girar">Girar a roleta</button>
+    <ul class="regras">
+      <li class="t">Como ganhar XP</li>
+      <li>Aceitar a missão e encarar o app<b>+100 XP</b></li>
+      <li>Cada obstáculo enfrentado<b>+15 XP</b></li>
+      <li>Pedir ajuda com suas palavras<b>+50 XP</b></li>
+      <li>Ter o problema resolvido<b>+100 XP</b></li>
+      <li>Avaliar o atendimento<b>+50 XP</b></li>
+      <li>Bônus: concluir em menos de 4 minutos<b>+50 XP</b></li>
+    </ul>
+  </div>`;
+}
+
+function vBriefing(){
+  const m=M(), n=MISSOES.indexOf(m)+1;
+  return `<div class="topo">Central de Missões<small>Missão ${num2(n)} de ${MISSOES.length}</small></div>
+  <div class="pagina">
+    <div class="dossie ${UI.revelar?'entra':''}">
+      <div class="dhead"><span>MISSÃO Nº <b>${num2(n)}</b></span><span>${esc(m.produto.toUpperCase())}</span></div>
+      <div class="dbody">
+        <div class="carimbo">MISSÃO<br>ATRIBUÍDA</div>
+        <div class="kicker">Codinome</div>
+        <h2 class="codinome">${esc(m.codinome)}</h2>
+        <div class="sub">${esc(m.titulo)}</div>
+        <div class="ficha">
+          <div><span>Local</span><b>${esc(m.local)}</b></div>
+          <div><span>Horário</span><b>${esc(m.hora)}</b></div>
+          <div><span>Urgência</span><b>${medidor(m.urgencia,'urg')}</b></div>
+          <div><span>Dificuldade</span><b>${medidor(m.dificuldade)}</b></div>
+        </div>
+        <h3>Situação</h3>
+        <p class="ctx" style="margin-top:0">${esc(m.contexto)}</p>
+        <div class="obj"><small>Seu objetivo</small>${esc(m.objetivo)}</div>
+      </div>
+    </div>
+    <button class="btn grande" data-a="aceitar">Aceitar missão</button>
+    ${!S.trocas?'<button class="btn ghost" data-a="sortear-outra">Girar de novo (última chance)</button>':''}
+  </div>
+  ${UI.revelar?confete():''}
+  ${UI.contagem?`<div class="contagem"><span>${esc(m.codinome)}</span><b id="cnum" class="${UI.contagem.length>2?'go':''}">${UI.contagem}</b><span>${esc(m.objetivo)}</span></div>`:''}`;
+}
+
+/* Barra fixa da missão: codinome, objetivo, cronômetro e progresso */
+function barraMissao(extra){
+  const m=M();
+  return `<div class="fixo"><button class="mbar" data-a="mbar"><span class="rot">MISSÃO</span><span class="t"><b>${esc(m.codinome)}</b> · ${esc(m.objetivo)}${UI.mbar?`<span>${esc(m.contexto)}</span>`:''}</span><span class="cron" id="cron">${mmss(S.tFim||agora())}</span></button>
+    <div class="prog"><i class="on">1 · App</i><i class="${S.view==='chat'?'on':''}">2 · Ajuda</i><i class="${S.nota?'on':''}">3 · Avaliação</i></div>${extra||''}</div>`;
+}
+setInterval(()=>{ const c=$('#cron'); if(c && S.t0) c.textContent=mmss(S.tFim||agora()); },1000);
+
+/* Ranking da turma (vem do servidor) e atualização enquanto os outros terminam */
+function rankHTML(j){
+  if(!j.posicao) return '<p class="rk-off">Calculando sua posição na turma…</p>';
+  const lin=r=>`<li class="${r.voce?'eu':''}"><span class="rk-n ${r.posicao<=3?'p'+r.posicao:''}">${r.posicao}º</span><span class="rk-nm"><b>${esc(r.voce?'Você':r.nome)}</b><small>${esc(r.codinome)}</small></span><b class="rk-xp">${r.xp} XP</b></li>`;
+  const frente=j.total>1?Math.round((j.total-j.posicao)/(j.total-1)*100):100;
+  const mov=UI.rankAnt&&UI.rankAnt!==j.posicao?(j.posicao<UI.rankAnt?`<span class="rk-mov sobe">subiu ${UI.rankAnt-j.posicao}</span>`:`<span class="rk-mov desce">caiu ${j.posicao-UI.rankAnt}</span>`):'';
+  return `<div class="rk-topo"><span>Sua posição na turma</span><b>${j.posicao}º${mov}</b>
+      <small>de ${j.total} agente${j.total>1?'s':''} que concluíram${j.andamento?` · ${j.andamento} ainda em missão`:''}</small></div>
+    ${j.posicao===1?`<p class="rk-msg">Você lidera a turma!</p>`:j.total>1&&frente>0?`<p class="rk-msg">Você ficou à frente de ${frente}% da turma.</p>`:j.total>1?`<p class="rk-msg">Jogue outra missão para subir no ranking.</p>`:''}
+    <ol class="rk-lista">${j.top.map(lin).join('')}${j.posicao>5?`<li class="rk-sep">…</li>${lin(j.voce)}`:''}</ol>
+    <p class="rk-off" style="margin:8px 0 0">O ranking se atualiza enquanto os outros agentes terminam.</p>`;
+}
+async function carregarRanking(){
+  if(S.view!=='revelacao') return;
+  if(!ONLINE){ const el=$('#rank'); if(el) el.innerHTML='<p class="rk-off">O ranking da turma aparece quando a missão roda pelo servidor do workshop.</p>'; return; }
+  await despachar();
+  try{
+    const r=await fetch('api/ranking?sid='+encodeURIComponent(S.sid),{cache:'no-store'}); const j=await r.json();
+    if(UI.rank&&UI.rank.posicao) UI.rankAnt=UI.rank.posicao;
+    const primeiraVez=!UI.rank||!UI.rank.posicao;
+    UI.rank=j;
+    const el=$('#rank'); if(el) el.innerHTML=rankHTML(j);
+    if(primeiraVez && j.posicao && j.posicao<=3){ som('vitoria'); vibrar([60,40,60]); document.body.insertAdjacentHTML('beforeend',confete()); setTimeout(()=>{ const c=$('.confete'); if(c) c.remove(); },4500); }
+  }catch(e){}
+}
+setInterval(carregarRanking,8000);
+
+function xpAtual(){
+  const ev=S.eventos, fb=ev.find(e=>e.tipo==='feedback');
+  return pontuacao({erros:ev.filter(e=>e.tipo==='erro').length, ajuda:ev.some(e=>e.tipo==='ajuda'),
+    resolvido:ev.some(e=>e.tipo==='resolvido'), avaliou:S.nota!=null, ms:fb?fb.t:null});
+}
+
+// Atalhos da tela inicial: [id, rótulo, ícone (traços SVG)]
+const TILES=[['pix','Pix','<path d="M12 3l9 9-9 9-9-9z"/><path d="M8.5 12h7"/>'],
+             ['pagar','Pagar','<path d="M4 6v12M7 6v12M10.5 6v12M14 6v12M17 6v12M20 6v12"/>'],
+             ['investir','Investir','<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>'],
+             ['cartoes','Cartões','<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h4"/>'],
+             ['extrato','Extrato','<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>'],
+             ['seguros','Seguros','<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'],
+             ['seguranca','Segurança','<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>'],
+             ['perfil','Perfil','<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>']];
+const ico = d => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+
+function vApp(){
+  const m=M(); const id=S.tela;
+  let titulo='Início',sub='',corpo='';
+  if(id==='home'){
+    corpo=`<div class="hello">Olá, cliente<small>Ag. 1234-5 · CC 98765-4</small></div>
+      <div class="saldo"><span>Saldo disponível</span><b>R$ 4.218,30</b></div>
+      <div class="tiles">${TILES.map(([k,l,i])=>`<button class="tile" data-a="tile" data-id="${k}">${ico(i)}${l}</button>`).join('')}</div>
+      <button class="link" data-a="ajuda">Precisa de ajuda?</button>`;
+  } else if(id.startsWith('desvio:')){
+    const t=TILES.find(x=>x[0]===id.slice(7)); titulo=t[1];
+    corpo=`<div class="vazio-app">${ico(t[2])}<p>Nada pendente por aqui.</p></div>
+      <button class="btn sec" data-a="voltar">Voltar ao início</button>`;
+  } else {
+    const t=m.telas[id]; titulo=t.t; sub=t.sub||'';
+    corpo = (t.aviso?`<div class="aviso ${t.avisoTipo==='erro'?'erro':''}">${esc(t.aviso)}</div>`:'')
+      + (t.txt?`<p class="txt">${esc(t.txt)}</p>`:'')
+      + (t.linhas?`<div class="linhas">${t.linhas.map(([a,b])=>`<div><span>${esc(a)}</span><b>${esc(b)}</b></div>`).join('')}</div>`:'')
+      + (t.campos?t.campos.map(c=>`<label class="campo"><span>${esc(c.l)}</span><input type="${c.tipo||'text'}" value="${esc(c.v)}"></label>`).join(''):'')
+      + `<div class="acoes">${t.acoes.map((a,i)=> a.est==='item'
+          ? `<button class="item" data-a="acao" data-i="${i}"><span class="it">${esc(a.l)}${a.d?`<small>${esc(a.d)}</small>`:''}</span></button>`
+          : `<button class="btn ${a.est==='sec'?'sec':'azul'}" data-a="acao" data-i="${i}">${esc(a.l)}</button>`).join('')}</div>`;
+  }
+  const podeVoltar = id!=='home' && id!==m.inicio;
+  return `${barraMissao()}
+  <div class="app">
+    <div class="ahead">
+      ${podeVoltar?'<button class="ib" data-a="voltar" aria-label="Voltar">‹</button>':''}
+      <div class="tt">${esc(titulo)}${sub?`<small>${esc(sub)}</small>`:''}</div>
+      <button class="ib" data-a="ajuda" aria-label="Ajuda">?</button>
+    </div>
+    <div class="abody">${corpo}</div>
+    ${UI.loading?'<div class="ov"><div class="ovl"><div class="spin"></div>Processando…</div></div>':''}
+    ${UI.modal?`<div class="ov"><div class="modal"><span class="alerta">!</span><b>Não foi possível continuar</b><p>${esc(UI.modal.erro)}</p><code>${esc(UI.modal.cod||'')}</code>
+      <button class="btn azul" data-a="modalok">Entendi</button></div></div>`:''}
+  </div>`;
+}
+
+function vChat(){
+  const ag=S.agente;
+  const head = ag
+    ? `<div class="av ${ag.tipo==='ia'?'ia':''}">${ag.tipo==='humano'?ag.nome[0]:'IA'}</div><div><b>${esc(destLabel(ag))}</b><small>● online</small></div>`
+    : `<div class="av ia">IA</div><div><b>Atendimento digital</b><small>● online</small></div>`;
+  const msgs=S.msgs.map(x=>{
+    if(x.de==='sistema') return `<div class="sys">${esc(x.txt)}</div>`;
+    if(x.de==='cliente') return `<div class="b cl">${esc(x.txt)}</div>`;
+    return `<div class="b ag"><span class="nm">${esc(x.nome||'Atendimento digital')}</span>${esc(x.txt)}</div>`;
+  }).join('') + (UI.typing?`<div class="b ag"><span class="nm">${esc(UI.typing)}</span><span class="typing"><i></i><i></i><i></i></span></div>`:'');
+  let foot='';
+  if(S.stage==='nota'){
+    foot=`<div class="stars">${[1,2,3,4,5].map(n=>`<button data-a="nota" data-n="${n}">${n}</button>`).join('')}</div><p class="dica" style="text-align:center">1 = muito ruim · 5 = excelente</p>`;
+  } else if(S.stage==='fim'){
+    foot=`<button class="btn azul" data-a="revelar">Ver os bastidores da sua missão →</button>`;
+  } else {
+    const chips = UI.busy?[]:({
+      at1:['Pode ser, pode seguir','Não entendi, explica melhor?','Sério? Perdi um tempão com isso'],
+      at2:['Ufa, resolveu! Obrigado','Ok… mas devia ser mais fácil pelo app','Ainda tenho receio de acontecer de novo']
+    }[S.stage]||[]);
+    const ph = S.stage==='feedback'?'Conte como você se sentiu…':S.stage==='triagem'?'Descreva o que aconteceu…':'Escreva sua mensagem…';
+    foot=`${chips.length?`<div class="chips">${chips.map(c=>`<button class="chip" data-a="chip" data-t="${esc(c)}">${esc(c)}</button>`).join('')}</div>`:''}
+      <form class="cform" id="cform"><textarea id="msg" rows="1" placeholder="${ph}" ${UI.busy?'disabled':''}></textarea><button class="send" ${UI.busy?'disabled':''} aria-label="Enviar">${ico('<path d="M4 12h15M13 6l6 6-6 6"/>')}</button></form>
+      ${S.stage==='triagem'||S.stage==='feedback'?'<p class="dica">Dica: escreva como você falaria de verdade, inclusive como está se sentindo.</p>':''}`;
+  }
+  return `<div class="chat">${barraMissao(`<div class="chead">${head}</div>`)}<div class="msgs">${msgs}</div><div class="cfoot">${foot}</div></div>`;
+}
+
+/* ===================== REVELAÇÃO ===================== */
+function vRevelacao(){
+  const m=M(), ev=S.eventos;
+  // --- Odisseia
+  const tAjuda=(ev.find(e=>e.tipo==='ajuda')||{t:0}).t;
+  const telas=ev.filter(e=>e.tipo==='tela').length;
+  const erros=ev.filter(e=>e.tipo==='erro');
+  const ret=ev.filter(e=>e.tipo==='retentativa').length;
+  const desv=ev.filter(e=>e.tipo==='desvio').length;
+  const esf=erros.length*2+ret+desv+telas*0.5;
+  const esfL=esf<6?'Baixo':esf<12?'Médio':'Alto';
+  const porTela={}; erros.forEach(e=>{porTela[e.tela]=(porTela[e.tela]||0)+1;});
+  const ft=Object.keys(porTela).sort((a,b)=>porTela[b]-porTela[a])[0];
+  const ftT=ft&&m.telas[ft]; const ultErro=erros.length?erros[erros.length-1]:null;
+  const ETQ={inicio:['Início','t-azul'],tela:['Navegação','t-cinza'],acao:['Ação','t-cinza'],retentativa:['Retentativa','t-erro'],erro:['Erro','t-erro'],
+    desvio:['Desvio','t-alerta'],voltar:['Navegação','t-cinza'],ajuda:['Pediu ajuda','t-amarelo'],chat:['Mensagem','t-cinza'],roteamento:['Roteamento','t-marinho'],
+    transferencia:['Transferência','t-alerta'],atendimento:['Atendimento','t-marinho'],resolvido:['Resolvido','t-ok'],feedback:['Avaliação','t-ok'],bastidores:['Bastidores','t-cinza']};
+  const tl=ev.map(e=>{ const [l,c]=ETQ[e.tipo]||[e.tipo,'t-cinza'];
+    return `<li><time>${mmss(e.t)}</time><span class="et ${c}">${l}</span><span>${esc(e.desc)}${e.cod?` <small style="color:var(--muted)">(${esc(e.cod)})</small>`:''}</span></li>`; }).join('');
+
+  // --- Roteamento
+  const R=S.rot, it=INTENCOES[R.top], certo=INTENCOES[m.intencao];
+  const totSinal=R.sinalTexto+R.sinalJornada||1;
+  const textoCli=S.msgs.filter(x=>x.de==='cliente'&&x.fase==='chegada').map(x=>x.txt).join(' / ');
+
+  // --- EscutAI
+  const um=S.msgs.filter(x=>x.de==='cliente'&&x.fase!=='nota').map(x=>Object.assign({},x,sentimento(x.txt)));
+  const media=a=>a.length?a.reduce((s,x)=>s+x.score,0)/a.length:0;
+  const geral=media(um);
+  const cheg=media(um.filter(x=>x.fase==='chegada'));
+  const saidaMsgs=um.filter(x=>x.fase==='feedback'); const saida=saidaMsgs.length?media(saidaMsgs):media(um.slice(-1));
+  const emo={}; um.forEach(x=>{for(const k in x.emo) emo[k]=(emo[k]||0)+x.emo[k];});
+  const emoOrd=Object.keys(emo).sort((a,b)=>emo[b]-emo[a]); const emoMax=emo[emoOrd[0]]||1;
+  const domCheg=emocaoDominante(um.filter(x=>x.fase==='chegada').reduce((o,x)=>{for(const k in x.emo)o[k]=(o[k]||0)+x.emo[k];return o;},{}));
+  const notaN=S.nota?(S.nota-3)/2:null; const gap=notaN!==null?Math.abs(notaN-saida):0;
+
+  // gráfico de evolução
+  const W=300,H=110,P=14; const n=um.length;
+  const xs=i=>n<=1?W/2:P+i*(W-2*P)/(n-1), ys=s=>H/2-s*(H/2-P);
+  const pts=um.map((x,i)=>[xs(i),ys(x.score)]);
+  const fases={chegada:'chegada',atendimento:'atend.',feedback:'feedback'};
+  const svg=`<svg viewBox="0 0 ${W} ${H+18}" width="100%" role="img" aria-label="Evolução do sentimento ao longo da conversa">
+    <line x1="0" x2="${W}" y1="${H/2}" y2="${H/2}" stroke="#D5D8E6" stroke-dasharray="4 4"/>
+    <text x="2" y="12">positivo</text><text x="2" y="${H-2}">negativo</text>
+    ${n>1?`<polyline fill="none" stroke="var(--esc)" stroke-width="2.5" stroke-linejoin="round" points="${pts.map(p=>p.join(',')).join(' ')}"/>`:''}
+    ${um.map((x,i)=>`<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="6" fill="${corSent(x.score)}" stroke="#fff" stroke-width="2"/>`).join('')}
+    ${um.map((x,i)=>`<text x="${pts[i][0]}" y="${H+14}" text-anchor="middle">${fases[x.fase]||''}</text>`).join('')}
+  </svg>`;
+
+  const codigo=`${m.id.toUpperCase()} · ${certo.destino.tipo==='ia'?'IA':'HUMANO'} · ${fmtS(cheg)} → ${fmtS(saida)}`;
+
+  const xp=xpAtual(), fb=ev.find(e=>e.tipo==='feedback');
+  return `<div class="rev">
+  <div class="rhero">
+    <div class="selo">MISSÃO CUMPRIDA</div>
+    <div class="kicker">${esc(m.codinome)}</div>
+    <div class="xp"><b id="xp" data-v="${xp}">0</b><span>XP</span></div>
+    <div class="nivel">Nível alcançado: <b>${esc(nivel(xp))}</b></div>
+    <div class="stats">
+      <div><b>${mmss(fb?fb.t:agora())}</b><span>tempo</span></div>
+      <div><b>${erros.length}</b><span>obstáculos</span></div>
+      <div><b>${S.nota||'–'}</b><span>sua nota</span></div>
+    </div>
+    <div class="rk" id="rank">${UI.rank?rankHTML(UI.rank):'<p class="rk-off">Calculando sua posição na turma…</p>'}</div>
+    <h1>O que aconteceu nos bastidores</h1>
+    <p class="lead">Enquanto você tentava “${esc(m.objetivo.replace(/\.$/,''))}”, três soluções do Banco do Brasil estavam trabalhando juntas.</p>
+  </div>
+  <nav class="rnav"><a href="#odisseia" style="--c:var(--odi)">Odisseia</a><a href="#roteamento" style="--c:var(--rot)">Roteamento</a><a href="#escutai" style="--c:var(--esc)">EscutAI</a></nav>
+
+  <section class="sol" id="odisseia" style="--c:var(--odi)">
+    <div class="tag">1 · Odisseia</div>
+    <h2>Toda a sua jornada, passo a passo</h2>
+    <p class="desc">O Odisseia acompanha a jornada do cliente nos canais digitais: cada tela, cada toque, cada erro e cada desistência.</p>
+    <div class="kpis">
+      <div class="kpi"><b>${mmss(tAjuda)}</b><span>até pedir ajuda</span></div>
+      <div class="kpi"><b>${telas}</b><span>telas visitadas</span></div>
+      <div class="kpi alerta"><b>${erros.length}</b><span>erros encontrados</span></div>
+      <div class="kpi ${esfL==='Alto'?'alerta':''}"><b>${esfL}</b><span>esforço do cliente${ret?` · ${ret} retentativa${ret>1?'s':''}`:''}</span></div>
+    </div>
+    ${ftT?`<div class="destaque"><b>Ponto de maior fricção:</b> tela “${esc(ftT.t+(ftT.sub?' · '+ftT.sub:''))}” com ${porTela[ft]} erro${porTela[ft]>1?'s':''}. Último erro: “${esc(ultErro.desc)}”</div>`:''}
+    <h3>Linha do tempo da sua jornada</h3>
+    <ul class="tl">${tl}</ul>
+    <div class="destaque"><b>Por que importa:</b> o banco enxerga onde os clientes travam antes que eles reclamem. E o histórico chega pronto para o atendimento: foi por isso que o especialista já sabia o que tinha acontecido, sem você repetir nada.</div>
+  </section>
+
+  <section class="sol" id="roteamento" style="--c:var(--rot)">
+    <div class="tag">2 · Roteamento Inteligente</div>
+    <h2>Da sua frase ao especialista certo</h2>
+    <p class="desc">O Roteamento Inteligente descobre a intenção do cliente e direciona para o especialista disponível, humano ou IA conversacional especialista.</p>
+    <b style="font-size:13px;color:var(--muted)">Você escreveu</b>
+    <div class="quote">“${esc(textoCli)}”</div>
+    <div class="lbl"><b>Intenção identificada: ${esc(it.nome)}</b><span>${pct(R.conf)}</span></div>
+    <div class="bar"><i style="width:${pct(R.conf)}"></i></div>
+    ${R.alt.slice(1).filter(a=>a.p>0).map(a=>`<div class="lbl" style="color:var(--muted)"><span>${esc(INTENCOES[a.id].nome)}</span><span>${pct(a.p)}</span></div><div class="bar"><i style="width:${pct(a.p)};opacity:.35"></i></div>`).join('')}
+    <div class="kpis">
+      <div class="kpi"><b>${pct(R.sinalTexto/totSinal)}</b><span>do sinal veio do seu texto${R.termos.length?`: “${esc(R.termos.slice(0,3).join('”, “'))}”`:''}</span></div>
+      <div class="kpi"><b>${pct(R.sinalJornada/totSinal)}</b><span>do sinal veio da sua jornada (Odisseia)</span></div>
+    </div>
+    <div class="dest"><div class="av ${certo.destino.tipo==='ia'?'ia':''}">${certo.destino.tipo==='humano'?certo.destino.nome[0]:'IA'}</div>
+      <div><b>${esc(destLabel(certo.destino))}</b><br><small style="color:var(--muted)">${certo.destino.tipo==='ia'?'IA conversacional especialista: resolve na hora, 24h por dia':'Especialista humano disponível: casos sensíveis ou complexos'} · direcionado em ${((R.tFim-R.tIni)/1000).toFixed(1)}s</small></div></div>
+    ${R.transferido?`<div class="destaque"><b>Houve uma transferência:</b> sua mensagem apontou para “${esc(it.nome)}”, mas a jornada mostrava “${esc(certo.nome)}”. O primeiro atendimento percebeu e transferiu sem você repetir nada. Esse é um bom caso para calibrar o modelo.</div>`:''}
+    <div class="destaque"><b>Por que importa:</b> sem menu de opções e sem “digite 1”. O cliente fala do jeito dele e chega direto em quem resolve.</div>
+  </section>
+
+  <section class="sol" id="escutai" style="--c:var(--esc)">
+    <div class="tag">3 · EscutAI</div>
+    <h2>O que você sentiu, de verdade</h2>
+    <p class="desc">O EscutAI transforma as conversas entre clientes e o banco em sentimento, sobre o cliente e sobre o produto.</p>
+    <div class="chg">
+      <div class="s"><b style="color:${corSent(cheg)}">${fmtS(cheg)}</b><span>Na chegada<br><strong>${rotulo(cheg)}</strong></span></div>
+      <div style="font-size:22px;color:var(--muted)">→</div>
+      <div class="s"><b style="color:${corSent(saida)}">${fmtS(saida)}</b><span>Na saída<br><strong>${rotulo(saida)}</strong></span></div>
+    </div>
+    <h3>Evolução ao longo da conversa</h3>
+    ${svg}
+    ${emoOrd.length?`<h3>Emoções detectadas</h3>${emoOrd.slice(0,4).map(k=>`<div class="lbl"><span>${EMO_NOME[k]}</span></div><div class="bar"><i style="width:${Math.round(emo[k]/emoMax*100)}%"></i></div>`).join('')}`:''}
+    <h3>O que foi captado em cada mensagem</h3>
+    ${um.map(x=>`<div class="um"><span class="sc">${etSent(x.score)}</span>${esc(x.txt)}
+      ${x.achados.length?`<div class="tags">${x.achados.map(a=>`<span class="${a.p<0?'n':'p'}">${esc(a.termo)} · ${EMO_NOME[a.e]}</span>`).join('')}</div>`:''}</div>`).join('')}
+    ${S.nota?`<div class="destaque"><b>Nota declarada × sentimento detectado:</b> você deu nota ${S.nota}/5 e o texto final soou ${rotulo(saida).toLowerCase()}. ${gap>0.6?'Há uma diferença relevante: a nota sozinha não conta a história toda.':'Nota e texto estão alinhados.'}</div>`:''}
+    <div class="destaque"><b>Insight gerado para o produto ${esc(m.produto)}:</b> o cliente chegou ${rotulo(cheg).toLowerCase()}${domCheg?`, com predominância de ${EMO_NOME[domCheg].toLowerCase()}`:''}${ultErro?`. Causa provável, cruzando com a jornada: “${esc(ultErro.desc)}”`:''}.</div>
+    <div class="destaque"><b>Por que importa:</b> uma conversa vira dado. Milhões de conversas viram um mapa do que os clientes sentem sobre cada produto e cada atendimento.</div>
+  </section>
+
+  <div class="fim">
+    <div style="font-size:13px;color:var(--muted)">Código da sua missão para o facilitador</div>
+    <div class="codigo">${esc(codigo)}</div>
+    <button class="btn azul" data-a="reiniciar">Jogar outra missão</button>
+  </div>
+  </div>`;
+}
+
+/* ===================== FLUXO DO APP ===================== */
+function irPara(id){
+  S.tela=id;
+  const t=M().telas[id];
+  if(id==='home') odi('tela','Tela inicial do app',{tela:id});
+  else if(t) odi('tela','Tela “'+t.t+(t.sub?' · '+t.sub:'')+'”',{tela:id});
+  salvar(); render(); window.scrollTo(0,0);
+}
+
+async function executarAcao(i){
+  if(UI.loading||UI.modal) return;
+  const m=M(), tela=m.telas[S.tela], a=tela.acoes[i];
+  const k=S.tela+'|'+i, n=S.cliques[k]||0; S.cliques[k]=n+1;
+  odi(n>0?'retentativa':'acao',(n>0?'Tentou de novo “':'Tocou em “')+a.l+'”',{tela:S.tela});
+  if(a.espera){ UI.loading=true; render(); await sleep(a.espera); UI.loading=false; }
+  if(a.erro && (a.vezes===undefined || n<a.vezes)){
+    odi('erro',a.erro,{cod:a.cod,tela:S.tela});
+    UI.modal=a; render(); return;
+  }
+  if(a.ajuda) return abrirChat('botão “'+a.l+'”');
+  if(a.ir) irPara(a.ir); else render();
+}
+
+function abrirChat(origem){
+  odi('ajuda','Pediu ajuda pelo '+origem);
+  S.view='chat'; S.stage='triagem'; S.msgs=[];
+  pushMsg({de:'agente',nome:'Atendimento digital',txt:'Olá! Me conta, com suas palavras: o que está acontecendo?',t:agora()});
+  salvar(); render();
+}
+
+/* ===================== FLUXO DO CHAT ===================== */
+async function falar(txt,quem){
+  const nome = quem ? destLabel(quem) : 'Atendimento digital';
+  UI.typing=nome; render();
+  await sleep(Math.min(2600,700+txt.length*12));
+  UI.typing=null;
+  pushMsg({de:'agente',nome,txt,t:agora()}); salvar(); render();
+}
+async function sistema(txt,ms){ pushMsg({de:'sistema',txt,t:agora()}); salvar(); render(); await sleep(ms||1100); }
+function empatia(s,emo){
+  if(s>-0.25) return '';
+  if(emo==='ansiedade') return 'Calma, vamos resolver isso juntos. ';
+  if(emo==='confusao') return 'Entendo, não ficou nada claro mesmo. ';
+  return 'Sinto muito pelo transtorno, você não deveria ter passado por isso. ';
+}
+function resumoJornada(){
+  const e=S.eventos, telas=new Set(e.filter(x=>x.tipo==='tela').map(x=>x.tela)).size, erros=e.filter(x=>x.tipo==='erro');
+  if(!erros.length) return 'Já estou com o histórico da sua jornada no app, então você não precisa repetir nada.';
+  return `Já estou com o histórico da sua jornada no app: você passou por ${telas} tela${telas>1?'s':''} e encontrou ${erros.length} erro${erros.length>1?'s':''}. O último foi “${trunc(erros[erros.length-1].desc,90)}”. Você não precisa repetir nada.`;
+}
+const palavras = t => tokens(t).length;
+const confuso = t => { const n=norm(t); return /nao entend|como assim|explica|confus|nao sei o que/.test(n); };
+
+async function enviar(txt){
+  txt=(txt||'').trim(); if(!txt||UI.busy) return;
+  const fase=S.stage==='triagem'?'chegada':S.stage==='feedback'?'feedback':'atendimento';
+  pushMsg({de:'cliente',txt,t:agora(),fase});
+  odi('chat','Escreveu: “'+trunc(txt,70)+'”');
+  await processar(txt);
+}
+
+async function processar(txt){
+  UI.busy=true; render();
+  const m=M(); const sent=sentimento(txt);
+  try{
+    if(S.stage==='triagem'){
+      if(palavras(txt)<3 && !S.esclareceu){
+        S.esclareceu=true;
+        await falar('Pode me contar um pouco mais? Assim eu te levo direto para quem resolve.');
+      } else await rotear();
+    } else if(S.stage==='at1'){
+      if(confuso(txt) && !S.explicou){
+        S.explicou=true;
+        await falar('Claro! Resumindo: '+m.simples+' Posso seguir?',S.agente);
+      } else {
+        await falar(empatia(sent.score,emocaoDominante(sent.emo))+m.roteiro[1],S.agente);
+        odi('resolvido','Problema resolvido por '+destLabel(S.agente));
+        S.stage='at2';
+      }
+    } else if(S.stage==='at2'){
+      await falar((sent.score>0.2?'Que bom! ':sent.score<-0.2?'Entendo, e vou registrar isso como melhoria para o app. ':'')+'Antes de encerrar: em poucas palavras, como foi essa experiência pra você hoje, do começo lá no app até agora?',S.agente);
+      S.stage='feedback';
+    } else if(S.stage==='feedback'){
+      await falar('Obrigado por contar! E de 1 a 5, que nota você dá para essa experiência?',S.agente);
+      S.stage='nota';
+    }
+  } finally { UI.busy=false; salvar(); render(); }
+}
+
+async function rotear(){
+  const m=M();
+  S.stage='roteando'; salvar();
+  await sistema('Entendendo o que você precisa…',1400);
+  const chegada=S.msgs.filter(x=>x.de==='cliente'&&x.fase==='chegada');
+  const r=classificar(chegada.map(x=>x.txt).join(' '));
+  S.rot=Object.assign(r,{tIni:chegada[0].t,tFim:agora(),transferido:false});
+  const it=INTENCOES[r.top], certo=INTENCOES[m.intencao];
+  odi('roteamento','Intenção “'+it.nome+'” ('+pct(r.conf)+') → '+destLabel(it.destino),
+      {intencao:r.top,correta:m.intencao,conf:+r.conf.toFixed(3),destino:it.destino,sinalTexto:r.sinalTexto,sinalJornada:r.sinalJornada,termos:r.termos,ms:S.rot.tFim-S.rot.tIni});
+  await sistema('Conectando você com '+destLabel(it.destino)+'…',1200);
+  if(r.top!==m.intencao){
+    await falar(`Olá! Pelo seu histórico, o seu caso é sobre ${certo.nome.toLowerCase()}, e quem resolve isso é outra equipe. Vou te transferir agora, sem você precisar repetir nada.`,it.destino);
+    S.rot.transferido=true;
+    odi('transferencia','Transferido para '+destLabel(certo.destino),{de:it.destino,para:certo.destino});
+    await sistema('Transferindo para '+destLabel(certo.destino)+'…',1300);
+  }
+  S.agente=certo.destino;
+  odi('atendimento','Atendimento iniciado com '+destLabel(certo.destino),{destino:certo.destino});
+  const sc=sentimento(chegada.map(x=>x.txt).join(' '));
+  const ola = certo.destino.tipo==='ia' ? `Olá! Sou o assistente virtual especialista em ${certo.destino.area}.` : `Olá! ${certo.destino.nome} aqui, especialista em ${certo.destino.area.split(' · ')[0]}.`;
+  await falar(ola+' '+resumoJornada()+'\n\n'+empatia(sc.score,emocaoDominante(sc.emo))+m.roteiro[0],certo.destino);
+  S.stage='at1';
+}
+
+/* ===================== EVENTOS ===================== */
+// Gira a roleta até a missão sorteada, com som de catraca a cada fatia
+function sortear(proxima){
+  if(UI.girando) return;
+  const p=new URLSearchParams(location.search).get('missao');
+  const forc=MISSOES.find(m=>m.id===p);
+  const pool=MISSOES.filter(m=>m.id!==S.missao);
+  const escolha=forc&&!proxima?forc:pool[Math.floor(Math.random()*pool.length)];
+  const k=MISSOES.indexOf(escolha), g=$('#roda');
+  UI.girando=true;
+  $('#roda-wrap').classList.add('girando');
+  document.querySelectorAll('[data-a]').forEach(b=>b.disabled=true);
+  $('#girar').textContent='Sorteando…';
+  const ini=UI.rot||0;
+  const alvo=ini+360*6+(((360-k*30-ini%360)%360)+360)%360+(Math.random()*16-8);
+  const dur=5200, t0=performance.now(); let fatia=Math.floor((ini+15)/30);
+  function quadro(t){
+    const x=Math.min(1,(t-t0)/dur), ang=ini+(alvo-ini)*(1-Math.pow(1-x,4));
+    g.style.transform=`rotate(${ang}deg)`;
+    const f=Math.floor((ang+15)/30); if(f!==fatia){ fatia=f; som('tick'); vibrar(4); }
+    if(x<1) return requestAnimationFrame(quadro);
+    UI.rot=ang%360; UI.girando=false;
+    const w=$('#roda-wrap'); w.classList.remove('girando'); w.classList.add('parou');
+    som('vitoria'); vibrar([40,40,80]);
+    const res=$('#resultado'); res.innerHTML=`<small>Missão ${num2(k+1)}</small>${esc(escolha.codinome)}`; res.classList.add('on');
+    S.missao=escolha.id; salvar();
+    setTimeout(()=>{
+      S.view='briefing'; UI.revelar=true; salvar(); render(); window.scrollTo(0,0);
+      setTimeout(()=>som('carimbo'),500);
+      setTimeout(()=>{ UI.revelar=false; const c=$('.confete'); if(c) c.remove(); },4500);
+    },1500);
+  }
+  requestAnimationFrame(quadro);
+}
+
+// Contagem regressiva antes de começar a missão
+async function contagem(){
+  for(const n of ['3','2','1']){ UI.contagem=n; render(); som('beep'); vibrar(25); await sleep(800); }
+  UI.contagem='VALENDO!'; render(); som('go'); vibrar(120); await sleep(800);
+  UI.contagem=null;
+  const m=M(); S.t0=Date.now(); S.tFim=null; S.eventos=[]; S.cliques={}; S.view='app';
+  S.sid=Date.now().toString(36)+Math.random().toString(36).slice(2,8); S.seq=0;
+  odi('inicio','Missão aceita: '+m.titulo);
+  irPara(m.inicio||'home');
+}
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-a]'); if(!el) return;
+  const a=el.dataset.a;
+  if(a==='sortear'){
+    const ap=$('#apelido'); if(ap){ try{ localStorage.setItem(KEY+'-apelido',ap.value.trim()); }catch(err){} }
+    sortear(false);
+  }
+  else if(a==='sortear-outra'){
+    S.trocas=(S.trocas||0)+1; S.view='inicio'; salvar(); render(); window.scrollTo(0,0);
+    setTimeout(()=>sortear(true),400);
+  }
+  else if(a==='aceitar'){ if(!UI.contagem) contagem(); }
+  else if(a==='mbar'){ UI.mbar=!UI.mbar; render(); }
+  else if(a==='tile'){
+    const m=M(), id=el.dataset.id, t=TILES.find(x=>x[0]===id);
+    if(m.entradas[id]){ odi('acao','Tocou em “'+t[1]+'” no início',{tela:'home'}); irPara(m.entradas[id]); }
+    else { odi('desvio','Abriu “'+t[1]+'”, fora do caminho da missão',{tela:'home'}); S.tela='desvio:'+id; salvar(); render(); }
+  }
+  else if(a==='voltar'){ const m=M(); odi('voltar','Voltou ao início'); irPara(m.inicio||'home'); }
+  else if(a==='ajuda'){ abrirChat('ícone de ajuda'); }
+  else if(a==='acao'){ executarAcao(+el.dataset.i); }
+  else if(a==='modalok'){ const md=UI.modal; UI.modal=null; if(md.irErro) irPara(md.irErro); else render(); }
+  else if(a==='chip'){ enviar(el.dataset.t); }
+  else if(a==='nota'){
+    const n=+el.dataset.n; S.nota=n; S.tFim=agora();
+    pushMsg({de:'cliente',txt:'Nota '+n+' de 5',t:agora(),fase:'nota'});
+    odi('feedback','Deu nota '+n+'/5',{nota:n});
+    S.stage='encerrando'; salvar(); render();
+    falar('Muito obrigado! Sua missão terminou. Toque no botão abaixo para ver o que aconteceu nos bastidores.',S.agente).then(()=>{ S.stage='fim'; salvar(); render(); });
+  }
+  else if(a==='revelar'){
+    const xp=xpAtual(); odi('bastidores','Abriu os bastidores da missão: '+xp+' XP',{xp});
+    S.view='revelacao'; salvar(); render(); window.scrollTo(0,0);
+    som('vitoria'); vibrar([40,40,80]);
+  }
+  else if(a==='reiniciar'){ UI.rank=null; UI.rankAnt=null; const ant=S.missao, fila=S.fila||[]; S=estadoNovo(); S.missao=ant; S.fila=fila; salvar(); render(); window.scrollTo(0,0); }
+});
+document.addEventListener('submit',e=>{
+  if(e.target.id!=='cform') return;
+  e.preventDefault(); const i=$('#msg'); const v=i.value; i.value=''; enviar(v);
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.id==='msg' && e.key==='Enter' && !e.shiftKey){ e.preventDefault(); $('#cform').requestSubmit(); }
+});
+
+/* Retoma de onde parou (ex.: celular recarregou a página) */
+(function retomar(){
+  if(S.view==='chat'){
+    const ult=S.msgs[S.msgs.length-1];
+    if(S.stage==='roteando'){ S.stage='triagem'; S.msgs=S.msgs.filter(x=>x.de!=='sistema'); }
+    if(S.stage==='encerrando') S.stage='fim';
+    if(ult && ult.de==='cliente' && ['triagem','at1','at2','feedback'].includes(S.stage)){ render(); processar(ult.txt); return; }
+  }
+  render();
+})();
+</script>
+</body>
+</html>

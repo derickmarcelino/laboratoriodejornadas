@@ -1,0 +1,14 @@
+{
+  "name": "laboratoriodejornadas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Workshop Missão Cliente: missões no celular, QR code e painel ao vivo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "simular": "node simular.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

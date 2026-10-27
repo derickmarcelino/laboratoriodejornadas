@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel Missão Cliente</title>
+<style>
+/* Paleta Banco do Brasil: amarelo #FCFC30 e azul #465EFF, com neutros de apoio */
+:root{
+  --amarelo:#FCFC30;--amarelo-claro:#FEFED6;--amarelo-texto:#5C5600;
+  --azul:#465EFF;--azul-escuro:#2338C8;--azul-marinho:#152173;--azul-claro:#ECEFFF;
+  --fundo:#F2F3F5;--card:#FFFFFF;--borda:#DDE0E6;--tinta:#1B1F2A;--suave:#5E6472;
+  --erro:#C8232C;--erro-claro:#FCEBEC;--ok:#0F7B53;--ok-claro:#E5F4EE;--alerta:#A35200;--alerta-claro:#FDF0E1;
+  --odi:var(--azul);--rot:var(--azul-marinho);--esc:#6B46C1;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--fundo);color:var(--tinta);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+
+header{position:sticky;top:0;z-index:10}
+.barra{background:var(--amarelo);display:flex;align-items:center;gap:16px;padding:0 24px;height:60px}
+.titulo{font-weight:700;font-size:18px;color:var(--azul-marinho);letter-spacing:-.01em}
+.titulo span{font-weight:400;color:var(--azul-marinho);opacity:.75;margin-left:10px;padding-left:10px;border-left:1px solid rgba(21,33,115,.3)}
+.esp{flex:1}
+.status{font-size:12px;color:var(--azul-marinho);display:flex;align-items:center;gap:6px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.status.off i{background:var(--erro)}
+.bt{border:1px solid var(--azul-marinho);background:transparent;color:var(--azul-marinho);border-radius:4px;padding:7px 14px;font-size:13px;font-weight:600;text-decoration:none}
+.bt:hover{background:rgba(21,33,115,.08)}
+.abas{background:var(--card);border-bottom:1px solid var(--borda);display:flex;padding:0 24px;overflow-x:auto}
+.aba{border:0;background:none;padding:13px 16px 11px;font-weight:600;font-size:14px;color:var(--suave);border-bottom:3px solid transparent;white-space:nowrap}
+.aba:hover{color:var(--tinta)}
+.aba.on{color:var(--azul);border-color:var(--azul)}
+
+main{padding:20px 24px 40px;max-width:1500px;margin:0 auto}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.g2b{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:980px){.g2,.g2b{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--borda);border-radius:6px;padding:16px 18px;min-width:0}
+.card h3{margin:0 0 14px;font-size:14px;font-weight:700;color:var(--tinta);padding-bottom:10px;border-bottom:1px solid var(--borda);display:flex;align-items:center;gap:8px}
+.card h3::before{content:"";width:4px;height:16px;background:var(--c,var(--azul));border-radius:2px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--borda);border-radius:6px;padding:12px 16px}
+.kpi span{display:block;font-size:12px;color:var(--suave);margin-bottom:4px}
+.kpi b{display:block;font-size:26px;line-height:1.15;font-weight:700;font-variant-numeric:tabular-nums;color:var(--azul-marinho)}
+.kpi.ruim b{color:var(--erro)}.kpi.bom b{color:var(--ok)}
+.kpi.duplo b{font-size:22px;white-space:nowrap}
+.kpi b em{font-style:normal;font-weight:400;color:var(--suave);margin:0 4px}
+
+.funil{display:grid;gap:10px}
+.fl{display:grid;grid-template-columns:140px 1fr 40px;gap:12px;align-items:center;font-size:13px}
+.trilho{height:18px;background:#EDEEF1;border-radius:3px;overflow:hidden}
+.trilho i{display:block;height:100%;background:var(--c,var(--azul));transition:width .4s}
+.fl b{text-align:right;font-variant-numeric:tabular-nums}
+
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.part{text-align:left;background:var(--card);border:1px solid var(--borda);border-left:4px solid var(--c);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.part:hover{background:#FAFAFB}
+.part.ocioso{opacity:.55}
+.part .nm{font-weight:700;font-size:14px;display:flex;justify-content:space-between;gap:8px}
+.part .mi{font-size:12px;color:var(--suave)}
+.part .onde{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.part .l3{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:2px}
+
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:3px;white-space:nowrap;letter-spacing:.01em}
+.t-azul{background:var(--azul-claro);color:var(--azul-escuro)}
+.t-marinho{background:#E6E8F3;color:var(--azul-marinho)}
+.t-amarelo{background:var(--amarelo-claro);color:var(--amarelo-texto);box-shadow:inset 0 0 0 1px #E8E39A}
+.t-erro{background:var(--erro-claro);color:var(--erro)}
+.t-ok{background:var(--ok-claro);color:var(--ok)}
+.t-alerta{background:var(--alerta-claro);color:var(--alerta)}
+.t-cinza{background:#EDEEF1;color:var(--suave)}
+.t-roxo{background:#F0EBFA;color:var(--esc)}
+
+.feed{margin:0;padding:0;list-style:none;max-height:74vh;overflow:auto}
+.feed li{display:grid;grid-template-columns:62px 110px 1fr;gap:8px;align-items:start;font-size:13px;padding:7px 4px;border-bottom:1px solid #EEF0F3}
+.feed li.novo{animation:n 2.5s ease-out}
+@keyframes n{0%{background:var(--amarelo-claro)}100%{background:transparent}}
+.feed time{color:var(--suave);font-variant-numeric:tabular-nums}
+.feed .q{color:var(--suave)}
+@media (max-width:600px){.feed li{grid-template-columns:56px 1fr}.feed li .tg{display:none}}
+
+.lista{display:flex;flex-direction:column;gap:12px}
+.lin{display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:13px}
+.lin .trilho{grid-column:1/-1;height:8px}
+.lin small{color:var(--suave)}
+.lin b{font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--suave);font-weight:600;font-size:12px;padding:8px;background:#F7F8FA;border-bottom:1px solid var(--borda)}
+td{padding:8px;border-bottom:1px solid #EEF0F3;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto}
+.pos{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:4px;background:#EDEEF1;font-weight:700;font-size:12px}
+.pos.p1{background:var(--amarelo);color:var(--azul-marinho)}.pos.p2{background:var(--azul);color:#fff}.pos.p3{background:var(--azul-marinho);color:#fff}
+tr[data-sid]:hover td{background:#FAFAFB}
+.vazio{color:var(--suave);font-size:13px;padding:24px 0;text-align:center}
+.termos{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline}
+.termos span{font-weight:600}
+.msgl{display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow:auto}
+.ml{border:1px solid var(--borda);border-left:4px solid var(--c);border-radius:4px;padding:8px 12px;font-size:13px}
+.ml small{display:flex;flex-wrap:wrap;gap:6px;align-items:center;color:var(--suave);font-size:12px;margin-bottom:4px}
+.leg{color:var(--suave);font-size:12px;margin:10px 0 0;display:flex;gap:16px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+
+.conv{display:grid;grid-template-columns:290px minmax(0,1fr);gap:16px}
+@media (max-width:980px){.conv{grid-template-columns:1fr}}
+.sl{display:flex;flex-direction:column;gap:6px;max-height:78vh;overflow:auto}
+.si{text-align:left;border:1px solid var(--borda);background:var(--card);border-radius:4px;padding:9px 12px;font-size:12px;color:var(--suave)}
+.si.on{border-color:var(--azul);box-shadow:inset 3px 0 0 var(--azul)}
+.si b{display:block;font-size:14px;color:var(--tinta)}
+.chat{display:flex;flex-direction:column;gap:8px}
+.b{max-width:82%;padding:8px 12px;border-radius:8px;font-size:13px;white-space:pre-line}
+.b.ag{background:#F0F2F5;align-self:flex-start}
+.b.cl{background:var(--azul);color:#fff;align-self:flex-end}
+.b .nm{display:block;font-size:11px;font-weight:700;color:var(--azul-marinho);margin-bottom:2px}
+.b .sc{display:block;margin-top:6px}
+.b.cl .sc .tag{background:rgba(255,255,255,.92)}
+.sys{align-self:center;font-size:12px;color:var(--suave);padding:2px 10px;border-top:1px dashed var(--borda);border-bottom:1px dashed var(--borda)}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:48px 96px 1fr;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px solid #EEF0F3}
+.tl time{color:var(--suave);font-variant-numeric:tabular-nums}
+.aviso{max-width:640px;margin:60px auto;background:var(--card);border:1px solid var(--borda);border-radius:6px;padding:24px;line-height:1.6}
+.aviso code{background:var(--fundo);padding:2px 6px;border-radius:3px}
+svg text{fill:var(--suave);font:11px "Segoe UI",system-ui,sans-serif}
+</style>
+</head>
+<body>
+<header>
+  <div class="barra">
+    <div class="titulo">Missão Cliente<span>Painel de acompanhamento</span></div>
+    <div class="esp"></div>
+    <span class="status off" id="vivo"><i></i>Conectando…</span>
+    <a class="bt" href="qrcode" target="_blank" rel="noopener">QR code</a>
+    <button class="bt" id="reset">Nova turma</button>
+  </div>
+  <nav class="abas" id="abas"></nav>
+</header>
+<main id="main"></main>
+
+<script src="missoes.js"></script>
+<script>
+/* ===================== estado e conexão ===================== */
+const ST={ev:[],ids:new Set(),aba:'geral',sel:null,conectado:false,novos:new Set(),atualizado:null};
+const ABAS=[['geral','Visão geral'],['odisseia','Odisseia'],['roteamento','Roteamento Inteligente'],['escutai','EscutAI'],['conversas','Conversas']];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=(x,d)=>x.toLocaleString('pt-BR',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});
+const pct=x=>num(Math.round((x||0)*100))+'%';
+const mmss=ms=>{const s=Math.max(0,Math.round((ms||0)/1000));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');};
+const hora=ts=>new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const trunc=(s,n)=>s&&s.length>n?s.slice(0,n-1)+'…':(s||'');
+const fmtS=s=>s==null?'–':(s>0?'+':'')+num(s,2);
+const rotulo=s=>s<=-0.6?'Muito negativo':s<=-0.2?'Negativo':s<0.2?'Neutro':s<0.6?'Positivo':'Muito positivo';
+const corSent=s=>s==null?'var(--borda)':s<=-0.2?'var(--erro)':s<0.2?'#9AA0AC':'var(--ok)';
+const clsSent=s=>s==null?'t-cinza':s<=-0.2?'t-erro':s<0.2?'t-cinza':'t-ok';
+const tagSent=(s,curto)=>s==null?'<span class="tag t-cinza">sem dado</span>':`<span class="tag ${clsSent(s)}">${curto?'':rotulo(s)+' '}${fmtS(s)}</span>`;
+const tag=(t,c)=>`<span class="tag ${c}">${t}</span>`;
+const seq=e=>+String(e.id).split('-').pop()||0;
+const quando=e=>e.recebido||e.ts;
+
+async function carregarEstado(){
+  try{ const r=await fetch('api/estado',{cache:'no-store'}); const j=await r.json();
+       ST.ev=[];ST.ids.clear(); adicionar(j.eventos,false); }catch(e){}
+}
+function adicionar(lista,vivo){
+  for(const e of lista){ if(ST.ids.has(e.id)) continue; ST.ids.add(e.id); ST.ev.push(e); if(vivo) ST.novos.add(e.id); }
+  ST.atualizado=Date.now(); agendar();
+}
+function conectar(){
+  const es=new EventSource('api/stream');
+  es.addEventListener('eventos',m=>adicionar(JSON.parse(m.data),true));
+  es.addEventListener('reset',()=>{ ST.ev=[];ST.ids.clear();ST.sel=null;agendar(); });
+  es.onopen=()=>{ ST.conectado=true; carregarEstado(); statusConexao(); };
+  es.onerror=()=>{ ST.conectado=false; statusConexao(); };
+}
+function statusConexao(){
+  const v=document.getElementById('vivo');
+  v.className='status'+(ST.conectado?'':' off');
+  v.innerHTML='<i></i>'+(ST.conectado?'Ao vivo'+(ST.atualizado?' · atualizado às '+hora(ST.atualizado):''):'Reconectando…');
+}
+let timer=null;
+function agendar(){ if(!timer) timer=setTimeout(()=>{ timer=null; render(); },350); }
+
+/* ===================== montagem das sessões ===================== */
+const ORDEM=['app','triagem','roteando','atendimento','resolvido','avaliou','bastidores'];
+const ETAPA_DE={inicio:'app',tela:'app',acao:'app',erro:'app',retentativa:'app',desvio:'app',voltar:'app',ajuda:'triagem',chat:'triagem',
+  roteamento:'roteando',transferencia:'roteando',atendimento:'atendimento',resolvido:'resolvido',feedback:'avaliou',bastidores:'bastidores'};
+const ETAPA={app:['No app','t-azul','var(--azul)'],triagem:['Pedindo ajuda','t-amarelo','#D9D200'],roteando:['Roteando','t-marinho','var(--azul-marinho)'],
+  atendimento:['Em atendimento','t-marinho','var(--azul-marinho)'],resolvido:['Resolvido','t-ok','var(--ok)'],avaliou:['Avaliou','t-ok','var(--ok)'],bastidores:['Nos bastidores','t-cinza','#9AA0AC']};
+const ATIVO_MS=3*60*1000;
+
+function sessoes(){
+  const map=new Map();
+  const ev=[...ST.ev].sort((a,b)=>a.sid===b.sid?seq(a)-seq(b):quando(a)-quando(b));
+  for(const e of ev){
+    let s=map.get(e.sid);
+    if(!s){ s={sid:e.sid,apelido:'',missao:e.missao,ev:[],msgs:[],etapa:'app',erros:[],telas:0,ret:0,desv:0,tela:null}; map.set(e.sid,s); }
+    s.ev.push(e); if(e.apelido) s.apelido=e.apelido;
+    const et=ETAPA_DE[e.tipo]; if(et && ORDEM.indexOf(et)>ORDEM.indexOf(s.etapa)) s.etapa=et;
+    if(e.tipo==='tela'){ s.telas++; s.tela=e.tela; }
+    else if(e.tipo==='erro') s.erros.push(e);
+    else if(e.tipo==='retentativa') s.ret++;
+    else if(e.tipo==='desvio') s.desv++;
+    else if(e.tipo==='ajuda') s.tAjuda=e.t;
+    else if(e.tipo==='roteamento') s.rot=e;
+    else if(e.tipo==='transferencia') s.transf=e;
+    else if(e.tipo==='atendimento') s.destino=e.destino;
+    else if(e.tipo==='feedback') s.nota=e.nota;
+    else if(e.tipo==='msg') s.msgs.push(e);
+  }
+  const agora=Date.now();
+  for(const s of map.values()){
+    s.m=MISSOES.find(m=>m.id===s.missao)||{titulo:s.missao,telas:{},produto:'?'};
+    s.nome=s.apelido||('Participante '+s.sid.slice(-4).toUpperCase());
+    s.inicio=quando(s.ev[0]); s.ultimo=quando(s.ev[s.ev.length-1]); s.duracao=s.ev[s.ev.length-1].t||0;
+    s.ativo=agora-s.ultimo<ATIVO_MS && s.etapa!=='bastidores';
+    const cli=s.msgs.filter(x=>x.de==='cliente'&&x.score!=null);
+    s.cli=cli;
+    s.cheg=avg(cli.filter(x=>x.fase==='chegada').map(x=>x.score));
+    s.saida=avg(cli.filter(x=>x.fase==='feedback').map(x=>x.score));
+    s.sentAtual=cli.length?cli[cli.length-1].score:null;
+    const fb=s.ev.find(e=>e.tipo==='feedback');
+    s.xp=pontuacao({erros:s.erros.length,ajuda:s.tAjuda!=null,resolvido:s.ev.some(e=>e.tipo==='resolvido'),avaliou:s.nota!=null,ms:fb?fb.t:null});
+    const t=s.m.telas[s.tela];
+    s.onde = s.etapa==='app' ? (s.tela==='home'?'Tela inicial':t?t.t+(t.sub?' · '+t.sub:''):(s.tela||'').startsWith('desvio:')?'Fora do caminho':'—')
+           : s.destino && ['atendimento','resolvido','avaliou'].includes(s.etapa) ? destLabel(s.destino) : ETAPA[s.etapa][0];
+  }
+  return [...map.values()].sort((a,b)=>b.ultimo-a.ultimo);
+}
+
+/* ===================== componentes ===================== */
+const kpi=(v,l,cls)=>`<div class="kpi ${cls||''}"><span>${l}</span><b>${v}</b></div>`;
+const card=(t,c,html,extra)=>`<section class="card" style="--c:${c}" ${extra||''}><h3>${t}</h3>${html}</section>`;
+const tagEtapa=s=>tag(ETAPA[s.etapa][0],ETAPA[s.etapa][1]);
+const tagDest=d=>d?tag(d.tipo==='humano'?'Humano':'IA',d.tipo==='humano'?'t-alerta':'t-azul'):'';
+const vazio=t=>`<div class="vazio">${t}</div>`;
+const nomeMissao=id=>(MISSOES.find(m=>m.id===id)||{titulo:id}).titulo;
+function barras(itens,c,max){ // itens: [{l, v, vt?, sub?, c?}]
+  if(!itens.length) return vazio('Sem dados ainda');
+  const mx=max||Math.max(...itens.map(i=>i.v),1);
+  return `<div class="lista">${itens.map(i=>`<div class="lin"><span>${i.l}</span><b>${i.vt!=null?i.vt:num(i.v)}</b>${i.sub?`<small style="grid-column:1/-1">${i.sub}</small>`:''}<div class="trilho" style="--c:${i.c||c}"><i style="width:${Math.round(i.v/mx*100)}%"></i></div></div>`).join('')}</div>`;
+}
+// Cada evento vira: etiqueta (tipo) + texto
+function descEvento(e,s){
+  const nome=`<b>${esc(s?s.nome:e.apelido||e.sid.slice(-4))}</b>`;
+  switch(e.tipo){
+    case 'inicio': return {t:tag('Início','t-azul'),h:`${nome} começou a missão “${esc(nomeMissao(e.missao))}”`};
+    case 'tela': return {t:tag('Navegação','t-cinza'),h:`${nome} <span class="q">${esc(e.desc)}</span>`};
+    case 'acao': return {t:tag('Ação','t-cinza'),h:`${nome} <span class="q">${esc(e.desc)}</span>`};
+    case 'retentativa': return {t:tag('Retentativa','t-erro'),h:`${nome} ${esc(e.desc)}`};
+    case 'erro': return {t:tag('Erro','t-erro'),h:`${nome} ${esc(trunc(e.desc,100))} <span class="q">${esc(e.cod||'')}</span>`};
+    case 'desvio': return {t:tag('Desvio','t-alerta'),h:`${nome} ${esc(e.desc)}`};
+    case 'voltar': return {t:tag('Navegação','t-cinza'),h:`${nome} voltou ao início`};
+    case 'ajuda': return {t:tag('Pediu ajuda','t-amarelo'),h:`${nome} ${esc(e.desc.toLowerCase())}`};
+    case 'roteamento': return {t:tag('Roteamento','t-marinho'),h:`${nome} ${esc(e.desc)}`};
+    case 'transferencia': return {t:tag('Transferência','t-alerta'),h:`${nome} ${esc(e.desc.toLowerCase())}`};
+    case 'atendimento': return e.destino&&e.destino.tipo==='humano'
+      ? {t:tag('Transbordo','t-alerta'),h:`${nome} encaminhado para ${esc(destLabel(e.destino))}`}
+      : {t:tag('Atendimento IA','t-azul'),h:`${nome} atendido por ${esc(e.destino?destLabel(e.destino):'IA')}`};
+    case 'resolvido': return {t:tag('Resolvido','t-ok'),h:`${nome} teve o problema resolvido`};
+    case 'feedback': return {t:tag('Avaliação','t-ok'),h:`${nome} deu nota ${e.nota} de 5`};
+    case 'bastidores': return {t:tag('Bastidores','t-cinza'),h:`${nome} abriu os bastidores`};
+    case 'msg':
+      if(e.de==='cliente'&&e.fase!=='nota') return {t:tag('Cliente','t-roxo'),h:`${nome} “${esc(trunc(e.txt,110))}” ${tagSent(e.score,true)}`};
+      if(e.de==='agente') return {t:tag('Atendente','t-cinza'),h:`<span class="q">${esc(e.nome)}: ${esc(trunc(e.txt,90))}</span>`};
+      return null;
+    default: return null;
+  }
+}
+
+/* ===================== abas ===================== */
+function vGeral(SS){
+  const ev=ST.ev;
+  const ativos=SS.filter(s=>s.ativo).length;
+  const erros=ev.filter(e=>e.tipo==='erro').length;
+  const ajuda=SS.filter(s=>s.tAjuda!=null).length;
+  const humano=SS.filter(s=>s.destino&&s.destino.tipo==='humano').length;
+  const ia=SS.filter(s=>s.destino&&s.destino.tipo==='ia').length;
+  const transf=SS.filter(s=>s.transf).length;
+  const resolv=SS.filter(s=>ORDEM.indexOf(s.etapa)>=ORDEM.indexOf('resolvido')).length;
+  const cheg=avg(SS.map(s=>s.cheg).filter(x=>x!=null)), saida=avg(SS.map(s=>s.saida).filter(x=>x!=null));
+  const nota=avg(SS.map(s=>s.nota).filter(x=>x!=null));
+  const n=SS.length||1;
+  const funil=[['Começaram',SS.length],['Pediram ajuda',ajuda],['Foram roteados',SS.filter(s=>s.rot).length],['Resolvidos',resolv],['Avaliaram',SS.filter(s=>s.nota!=null).length]];
+  const feed=[...ev].sort((a,b)=>quando(b)-quando(a)||seq(b)-seq(a)).map(e=>{ const s=SS.find(x=>x.sid===e.sid); const d=descEvento(e,s); return d&&{e,d}; }).filter(Boolean).slice(0,60);
+  return `<div class="kpis">
+      ${kpi(num(SS.length),'Participantes')}
+      ${kpi(num(ativos),'Ativos agora')}
+      ${kpi(num(erros),'Erros no app',erros?'ruim':'')}
+      ${kpi(num(ajuda),'Pediram ajuda')}
+      ${kpi(num(ia),'Atendidos por IA')}
+      ${kpi(num(humano),'Transbordos para humano')}
+      ${kpi(num(transf),'Transferências',transf?'ruim':'')}
+      ${kpi(cheg==null?'–':`${fmtS(cheg)}<em>→</em>${fmtS(saida)}`,'Sentimento: chegada → saída','duplo')}
+      ${kpi(nota==null?'–':num(nota,1),'Nota média (1 a 5)')}
+    </div>
+    <div class="grid g2">
+      <div class="grid">
+        ${card('Funil das missões','var(--azul)',`<div class="funil">${funil.map(([l,v],i)=>`<div class="fl"><span>${l}</span><div class="trilho" style="--c:${['#8E9BFF','var(--azul)','var(--azul-escuro)','var(--azul-marinho)','var(--ok)'][i]}"><i style="width:${Math.round(v/n*100)}%"></i></div><b>${num(v)}</b></div>`).join('')}</div>`)}
+        ${card('Ranking de agentes (XP)','var(--amarelo)', SS.length?`<div class="tw"><table><tr><th>#</th><th>Agente</th><th>Missão</th><th>Nível</th><th>Situação</th><th style="text-align:right">XP</th></tr>
+          ${[...SS].sort((a,b)=>b.xp-a.xp||a.duracao-b.duracao).slice(0,10).map((s,i)=>`<tr data-sid="${s.sid}" style="cursor:pointer"><td><span class="pos ${i<3?'p'+(i+1):''}">${i+1}</span></td><td><b>${esc(s.nome)}</b></td><td>${esc(s.m.codinome||s.m.titulo)}</td><td>${esc(nivel(s.xp))}</td><td>${tagEtapa(s)}</td><td style="text-align:right;font-weight:700;font-size:16px;color:var(--azul-marinho)">${num(s.xp)}</td></tr>`).join('')}</table></div>`:vazio('O ranking aparece quando a turma começar.'))}
+        ${card('Participantes · clique para ver jornada e conversa','var(--azul)', SS.length?`<div class="parts">${SS.map(s=>`
+          <button class="part ${s.ativo?'':'ocioso'}" style="--c:${ETAPA[s.etapa][2]}" data-sid="${s.sid}">
+            <span class="nm"><span>${esc(s.nome)}</span><span style="font-weight:400;color:var(--suave);font-size:12px">${mmss(s.duracao)}</span></span>
+            <span class="mi">${esc(s.m.codinome||s.m.titulo)} · ${num(s.xp)} XP</span>
+            <span class="onde">${esc(s.onde)}</span>
+            <span class="l3">${tagEtapa(s)}${s.erros.length?tag(s.erros.length+' erro'+(s.erros.length>1?'s':''),'t-erro'):''}${s.transf?tag('Transferido','t-alerta'):''}${s.sentAtual!=null?tagSent(s.sentAtual,true):''}</span>
+          </button>`).join('')}</div>`:vazio('Ninguém começou ainda. Mostre o QR code para a turma.'))}
+      </div>
+      ${card('Acontecendo agora','var(--amarelo)',feed.length?`<ul class="feed">${feed.map(({e,d})=>`<li class="${ST.novos.has(e.id)?'novo':''}"><time>${hora(quando(e))}</time><span class="tg">${d.t}</span><span>${d.h}</span></li>`).join('')}</ul>`:vazio('Aguardando eventos…'))}
+    </div>`;
+}
+
+function vOdisseia(SS){
+  const noApp=SS.filter(s=>s.ativo&&s.etapa==='app');
+  const agora={}; noApp.forEach(s=>{ const k=s.missao+'|'+s.onde; (agora[k]=agora[k]||{m:s.m,onde:s.onde,quem:[]}).quem.push(s.nome); });
+  const errosEv=ST.ev.filter(e=>e.tipo==='erro');
+  const porCod={}; errosEv.forEach(e=>{ const k=e.cod||e.desc; const o=porCod[k]=porCod[k]||{cod:e.cod,desc:e.desc,n:0,miss:new Set()}; o.n++; o.miss.add(e.missao); });
+  const topErros=Object.values(porCod).sort((a,b)=>b.n-a.n).slice(0,10);
+  const telasEv=ST.ev.filter(e=>e.tipo==='tela'&&e.tela!=='home');
+  const porTela={}; telasEv.forEach(e=>{ const m=MISSOES.find(x=>x.id===e.missao); const t=m&&m.telas[e.tela]; const k=e.missao+'|'+e.tela; (porTela[k]=porTela[k]||{l:(t?t.t+(t.sub?' · '+t.sub:''):e.tela),sub:m?m.titulo:'',v:0}).v++; });
+  const porMissao=MISSOES.map(m=>{ const ss=SS.filter(s=>s.missao===m.id); if(!ss.length) return null;
+    const esf=avg(ss.map(s=>s.erros.length*2+s.ret+s.desv+s.telas*0.5));
+    return {m,n:ss.length,erros:avg(ss.map(s=>s.erros.length)),ret:avg(ss.map(s=>s.ret)),desv:ss.reduce((a,s)=>a+s.desv,0),
+      tAj:avg(ss.filter(s=>s.tAjuda!=null).map(s=>s.tAjuda)),pedir:ss.filter(s=>s.tAjuda!=null).length/ss.length,esf}; }).filter(Boolean).sort((a,b)=>b.esf-a.esf);
+  const tAj=avg(SS.filter(s=>s.tAjuda!=null).map(s=>s.tAjuda));
+  return `<div class="kpis">
+      ${kpi(num(noApp.length),'Navegando no app agora')}
+      ${kpi(num(telasEv.length),'Telas visitadas')}
+      ${kpi(num(errosEv.length),'Erros',errosEv.length?'ruim':'')}
+      ${kpi(num(ST.ev.filter(e=>e.tipo==='retentativa').length),'Retentativas')}
+      ${kpi(num(ST.ev.filter(e=>e.tipo==='desvio').length),'Desvios de caminho')}
+      ${kpi(tAj==null?'–':mmss(tAj),'Tempo médio até pedir ajuda')}
+    </div>
+    <div class="grid g2b">
+      ${card('Onde os clientes estão agora','var(--odi)',barras(Object.values(agora).sort((a,b)=>b.quem.length-a.quem.length).map(o=>({l:`${esc(o.onde)} <small>· ${esc(o.m.titulo)}</small>`,v:o.quem.length,sub:esc(o.quem.join(', '))})),'var(--odi)'))}
+      ${card('Erros mais frequentes','var(--erro)',barras(topErros.map(o=>({l:esc(trunc(o.desc,80)),v:o.n,sub:`${esc(o.cod||'')} · ${[...o.miss].map(id=>esc(nomeMissao(id))).join(', ')}`})),'var(--erro)'))}
+      ${card('Fricção por missão (maior esforço primeiro)','var(--odi)',porMissao.length?`<div class="tw"><table><tr><th>Missão</th><th>Pessoas</th><th>Erros/pessoa</th><th>Retentativas</th><th>Desvios</th><th>Até ajuda</th><th>Pediram ajuda</th></tr>
+        ${porMissao.map(r=>`<tr><td>${esc(r.m.titulo)}</td><td>${num(r.n)}</td><td style="color:${r.erros>=2?'var(--erro)':'inherit'};font-weight:${r.erros>=2?700:400}">${num(r.erros,1)}</td><td>${num(r.ret,1)}</td><td>${num(r.desv)}</td><td>${r.tAj==null?'–':mmss(r.tAj)}</td><td>${pct(r.pedir)}</td></tr>`).join('')}</table></div>`:vazio('Sem dados ainda'))}
+      ${card('Telas mais visitadas','var(--odi)',barras(Object.values(porTela).sort((a,b)=>b.v-a.v).slice(0,10).map(o=>({l:`${esc(o.l)} <small>· ${esc(o.sub)}</small>`,v:o.v})),'var(--odi)'))}
+    </div>`;
+}
+
+function vRoteamento(SS){
+  const rot=SS.filter(s=>s.rot);
+  const conf=avg(rot.map(s=>s.rot.conf)); const ms=avg(rot.map(s=>s.rot.ms).filter(x=>x!=null));
+  const ia=SS.filter(s=>s.destino&&s.destino.tipo==='ia'), hu=SS.filter(s=>s.destino&&s.destino.tipo==='humano');
+  const transf=SS.filter(s=>s.transf);
+  const acerto=rot.length?rot.filter(s=>s.rot.intencao===s.rot.correta).length/rot.length:null;
+  const st=rot.reduce((a,s)=>a+(s.rot.sinalTexto||0),0), sj=rot.reduce((a,s)=>a+(s.rot.sinalJornada||0),0);
+  const dest={}; SS.filter(s=>s.destino).forEach(s=>{ const k=destLabel(s.destino); const o=dest[k]=dest[k]||{d:s.destino,n:0,agora:0}; o.n++; if(s.ativo&&s.etapa==='atendimento') o.agora++; });
+  const intents={}; rot.forEach(s=>{ const o=intents[s.rot.intencao]=intents[s.rot.intencao]||{n:0,c:[]}; o.n++; o.c.push(s.rot.conf); });
+  const entradas=rot.slice(0,12).map(s=>({s,txt:s.msgs.filter(x=>x.de==='cliente'&&x.fase==='chegada').map(x=>x.txt).join(' / ')}));
+  return `<div class="kpis">
+      ${kpi(num(rot.length),'Clientes roteados')}
+      ${kpi(num(ia.length),'IA especialista')}
+      ${kpi(num(hu.length),'Transbordo para humano')}
+      ${kpi(conf==null?'–':pct(conf),'Confiança média')}
+      ${kpi(acerto==null?'–':pct(acerto),'Acerto na primeira tentativa',acerto!=null&&acerto<0.8?'ruim':acerto!=null?'bom':'')}
+      ${kpi(ms==null?'–':num(ms/1000,1)+' s','Tempo médio para direcionar')}
+    </div>
+    <div class="grid g2b">
+      ${card('Para onde os clientes foram','var(--rot)',barras(Object.entries(dest).sort((a,b)=>b[1].n-a[1].n).map(([k,o])=>({l:`${tagDest(o.d)} ${esc(k)}`,v:o.n,c:o.d.tipo==='humano'?'var(--alerta)':'var(--azul)',sub:o.agora?`${o.agora} em atendimento agora`:''})),'var(--rot)'))}
+      ${card('Intenções detectadas','var(--rot)',barras(Object.entries(intents).sort((a,b)=>b[1].n-a[1].n).map(([id,o])=>({l:esc(INTENCOES[id].nome),v:o.n,sub:'Confiança média '+pct(avg(o.c))})),'var(--rot)'))}
+      ${card('De onde vem o sinal','var(--rot)',st+sj?`${barras([{l:'Texto escrito pelo cliente',v:st,vt:pct(st/(st+sj))},{l:'Jornada no app (Odisseia)',v:sj,vt:pct(sj/(st+sj)),c:'var(--azul)'}],'var(--rot)',st+sj)}<p class="leg">Quando o cliente escreve pouco, a jornada registrada pelo Odisseia ajuda o roteamento a acertar.</p>`:vazio('Sem dados ainda'))}
+      ${card('Transferências (roteamento errou na primeira)','var(--alerta)',transf.length?`<div class="msgl">${transf.map(s=>`<div class="ml" style="--c:var(--alerta)"><small><b>${esc(s.nome)}</b> · ${esc(s.m.titulo)}</small>“${esc(s.msgs.filter(x=>x.de==='cliente'&&x.fase==='chegada').map(x=>x.txt).join(' / '))}”<br><span style="color:var(--suave)">Detectado: ${esc(INTENCOES[s.rot.intencao].nome)} → correto: ${esc(INTENCOES[s.rot.correta].nome)}</span></div>`).join('')}</div>`:vazio('Nenhuma transferência até agora'))}
+    </div>
+    ${card('Como os clientes pedem ajuda','var(--rot)',entradas.length?`<div class="msgl">${entradas.map(({s,txt})=>`<div class="ml" style="--c:var(--azul-marinho)"><small><b>${esc(s.nome)}</b> · ${esc(s.m.titulo)} → ${esc(INTENCOES[s.rot.intencao].nome)} ${tag(pct(s.rot.conf),'t-marinho')}${s.rot.termos&&s.rot.termos.length?' · termos: '+esc(s.rot.termos.join(', ')):''}</small>“${esc(txt)}”</div>`).join('')}</div>`:vazio('Sem dados ainda'),'style="margin-top:16px"')}`;
+}
+
+function vEscutai(SS){
+  const cli=ST.ev.filter(e=>e.tipo==='msg'&&e.de==='cliente'&&e.score!=null);
+  const geral=avg(cli.map(e=>e.score));
+  const cheg=avg(SS.map(s=>s.cheg).filter(x=>x!=null)), saida=avg(SS.map(s=>s.saida).filter(x=>x!=null));
+  const nota=avg(SS.map(s=>s.nota).filter(x=>x!=null));
+  const diverg=SS.filter(s=>s.nota!=null&&s.saida!=null&&Math.abs((s.nota-3)/2-s.saida)>0.6);
+  const emo={}; cli.forEach(e=>{ for(const k in (e.emo||{})) emo[k]=(emo[k]||0)+e.emo[k]; });
+  const termos={}; cli.forEach(e=>(e.termos||[]).forEach(t=>{ const o=termos[t.termo]=termos[t.termo]||{n:0,p:0}; o.n++; o.p+=t.p; }));
+  const topT=Object.entries(termos).sort((a,b)=>b[1].n-a[1].n).slice(0,30); const mxT=topT.length?topT[0][1].n:1;
+  // sentimento por missão: chegada × saída
+  const linhas=MISSOES.map(m=>{ const ss=SS.filter(s=>s.missao===m.id); const c=avg(ss.map(s=>s.cheg).filter(x=>x!=null)), sd=avg(ss.map(s=>s.saida).filter(x=>x!=null)); return (c!=null||sd!=null)?{m,c,sd,n:ss.length}:null; }).filter(Boolean);
+  const X=v=>360+v*170;
+  const dumb=linhas.length?`<svg viewBox="0 0 540 ${linhas.length*32+24}" width="100%" role="img" aria-label="Sentimento na chegada e na saída por missão">
+      <line x1="${X(0)}" x2="${X(0)}" y1="0" y2="${linhas.length*32}" stroke="#C9CDD6" stroke-dasharray="3 4"/>
+      ${linhas.map((r,i)=>{ const y=i*32+16; const a=r.c!=null?X(r.c):null, b=r.sd!=null?X(r.sd):null;
+        return `<text x="0" y="${y+4}" style="fill:var(--tinta);font-size:12px">${esc(trunc(r.m.titulo,28))}</text>
+          <line x1="190" x2="530" y1="${y}" y2="${y}" stroke="#EDEEF1"/>
+          ${a!=null&&b!=null?`<line x1="${a}" x2="${b}" y1="${y}" y2="${y}" stroke="#9AA0AC" stroke-width="2"/>`:''}
+          ${a!=null?`<circle cx="${a}" cy="${y}" r="6" fill="var(--erro)"><title>Chegada ${fmtS(r.c)}</title></circle>`:''}
+          ${b!=null?`<circle cx="${b}" cy="${y}" r="6" fill="var(--azul)"><title>Saída ${fmtS(r.sd)}</title></circle>`:''}`; }).join('')}
+      <text x="190" y="${linhas.length*32+18}">negativo</text><text x="${X(0)}" y="${linhas.length*32+18}" text-anchor="middle">neutro</text><text x="530" y="${linhas.length*32+18}" text-anchor="end">positivo</text>
+    </svg><p class="leg"><span><i style="background:var(--erro)"></i>Chegada (antes do atendimento)</span><span><i style="background:var(--azul)"></i>Saída (feedback final)</span></p>`:vazio('Sem dados ainda');
+  return `<div class="kpis">
+      ${kpi(num(cli.length),'Mensagens analisadas')}
+      ${kpi(fmtS(geral),'Sentimento geral',geral!=null&&geral<=-0.2?'ruim':geral!=null&&geral>=0.2?'bom':'')}
+      ${kpi(fmtS(cheg),'Na chegada',cheg!=null&&cheg<=-0.2?'ruim':'')}
+      ${kpi(fmtS(saida),'Na saída',saida!=null&&saida>=0.2?'bom':'')}
+      ${kpi(nota==null?'–':num(nota,1),'Nota média declarada')}
+      ${kpi(num(diverg.length),'Notas que divergem do texto',diverg.length?'ruim':'')}
+    </div>
+    <div class="grid g2b">
+      ${card('Sentimento por missão: chegada → saída','var(--esc)',dumb)}
+      ${card('Emoções detectadas','var(--esc)',barras(Object.entries(emo).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({l:EMO_NOME[k],v:+v.toFixed(1),vt:'',c:['alivio','satisfacao','gratidao'].includes(k)?'var(--ok)':'var(--erro)'})),'var(--esc)'))}
+      ${card('O que os clientes mais dizem','var(--esc)',topT.length?`<div class="termos">${topT.map(([t,o])=>`<span style="font-size:${13+Math.round(o.n/mxT*14)}px;color:${o.p<0?'var(--erro)':'var(--ok)'}">${esc(t)}</span>`).join('')}</div><p class="leg"><span><i style="background:var(--erro)"></i>Negativo</span><span><i style="background:var(--ok)"></i>Positivo</span><span>Tamanho = frequência</span></p>`:vazio('Sem dados ainda'))}
+      ${card('Últimas mensagens dos clientes','var(--esc)',cli.length?`<div class="msgl">${[...cli].sort((a,b)=>quando(b)-quando(a)).slice(0,20).map(e=>{ const s=SS.find(x=>x.sid===e.sid);
+        const emos=(e.termos||[]).map(t=>EMO_NOME[t.e]).filter((v,i,a)=>a.indexOf(v)===i);
+        return `<div class="ml" style="--c:${corSent(e.score)}"><small><b>${esc(s?s.nome:'')}</b> · ${esc(s?s.m.titulo:'')} · ${e.fase==='chegada'?'chegada':e.fase==='feedback'?'feedback':'atendimento'} ${tagSent(e.score)}${emos.length?' '+esc(emos.join(', ')):''}</small>${esc(e.txt)}</div>`; }).join('')}</div>`:vazio('Sem dados ainda'))}
+    </div>`;
+}
+
+const TL_TAG={inicio:['Início','t-azul'],tela:['Navegação','t-cinza'],acao:['Ação','t-cinza'],retentativa:['Retentativa','t-erro'],erro:['Erro','t-erro'],desvio:['Desvio','t-alerta'],
+  voltar:['Navegação','t-cinza'],ajuda:['Pediu ajuda','t-amarelo'],roteamento:['Roteamento','t-marinho'],transferencia:['Transferência','t-alerta'],atendimento:['Atendimento','t-marinho'],
+  resolvido:['Resolvido','t-ok'],feedback:['Avaliação','t-ok'],bastidores:['Bastidores','t-cinza']};
+function vConversas(SS){
+  if(!SS.length) return vazio('Nenhuma missão ainda.');
+  if(!ST.sel||!SS.find(s=>s.sid===ST.sel)) ST.sel=SS[0].sid;
+  const s=SS.find(x=>x.sid===ST.sel);
+  const lista=`<div class="sl">${SS.map(x=>`<button class="si ${x.sid===ST.sel?'on':''}" data-sid="${x.sid}"><b>${esc(x.nome)}</b>${esc(x.m.titulo)}<br><span style="display:inline-flex;gap:4px;margin-top:4px">${tagEtapa(x)}${x.erros.length?tag(x.erros.length+' erros','t-erro'):''}</span></button>`).join('')}</div>`;
+  const msgs=s.msgs.map(x=>{
+    if(x.de==='sistema') return `<div class="sys">${esc(x.txt)}</div>`;
+    if(x.de==='cliente') return `<div class="b cl">${esc(x.txt)}${x.score!=null?`<span class="sc">${tagSent(x.score)}${(x.termos||[]).length?' <span style="opacity:.85;font-size:11px">'+esc(x.termos.map(t=>t.termo).join(', '))+'</span>':''}</span>`:''}</div>`;
+    return `<div class="b ag"><span class="nm">${esc(x.nome)}</span>${esc(x.txt)}</div>`;
+  }).join('');
+  const tl=s.ev.filter(e=>e.tipo!=='msg'&&e.tipo!=='chat').map(e=>{
+    let [l,c]=TL_TAG[e.tipo]||[e.tipo,'t-cinza'];
+    if(e.tipo==='atendimento'&&e.destino&&e.destino.tipo==='humano'){ l='Transbordo'; c='t-alerta'; }
+    return `<li><time>${mmss(e.t)}</time><span>${tag(l,c)}</span><span>${esc(e.desc)}${e.cod?` <span style="color:var(--suave)">(${esc(e.cod)})</span>`:''}</span></li>`; }).join('');
+  return `<div class="conv">${lista}
+    <div class="grid">
+      ${card(`${esc(s.nome)} · ${esc(s.m.titulo)}`,'var(--azul)',`<div class="kpis" style="margin:0">
+          ${kpi(num(s.erros.length),'Erros',s.erros.length?'ruim':'')}
+          ${kpi(s.tAjuda!=null?mmss(s.tAjuda):'–','Até pedir ajuda')}
+          ${kpi(s.rot?pct(s.rot.conf):'–',s.rot?'Intenção: '+esc(INTENCOES[s.rot.intencao].nome):'Intenção')}
+          ${kpi(s.destino?(s.destino.tipo==='humano'?'Humano':'IA'):'–',s.destino?esc(destLabel(s.destino)):'Destino')}
+          ${kpi(`${fmtS(s.cheg)}<em>→</em>${fmtS(s.saida)}`,'Sentimento: chegada → saída','duplo')}
+          ${kpi(s.nota!=null?s.nota+' de 5':'–','Nota')}
+        </div>`)}
+      <div class="grid g2b">
+        ${card('Conversa · Roteamento Inteligente e EscutAI','var(--esc)',msgs?`<div class="chat">${msgs}</div>`:vazio('Ainda não pediu ajuda'))}
+        ${card('Jornada · Odisseia','var(--odi)',`<ul class="tl">${tl}</ul>`)}
+      </div>
+    </div></div>`;
+}
+
+/* ===================== render ===================== */
+function render(){
+  document.getElementById('abas').innerHTML=ABAS.map(([id,l])=>`<button class="aba ${ST.aba===id?'on':''}" data-aba="${id}">${l}</button>`).join('');
+  const SS=sessoes();
+  const v={geral:vGeral,odisseia:vOdisseia,roteamento:vRoteamento,escutai:vEscutai,conversas:vConversas}[ST.aba];
+  document.getElementById('main').innerHTML=v(SS);
+  statusConexao();
+  setTimeout(()=>ST.novos.clear(),2600);
+}
+
+document.addEventListener('click',async e=>{
+  const ab=e.target.closest('[data-aba]'); if(ab){ ST.aba=ab.dataset.aba; render(); window.scrollTo(0,0); return; }
+  const sd=e.target.closest('[data-sid]'); if(sd){ ST.sel=sd.dataset.sid; ST.aba='conversas'; render(); window.scrollTo(0,0); return; }
+  if(e.target.id==='reset'){
+    if(!confirm('Começar uma nova turma? Os dados atuais serão arquivados no servidor e o painel será zerado.')) return;
+    // Servidor publicado pede a senha definida em SENHA; localmente não pede nada
+    let senha=''; try{ senha=sessionStorage.getItem('senha')||''; }catch(_){}
+    for(;;){
+      const r=await fetch('api/reset',{method:'POST',headers:{'X-Senha':senha}});
+      if(r.status!==401){ try{ sessionStorage.setItem('senha',senha); }catch(_){} break; }
+      senha=prompt(senha?'Senha incorreta. Tente de novo:':'Senha do painel para zerar a turma:');
+      if(senha===null) break;
+    }
+  }
+});
+
+if(!location.protocol.startsWith('http')){
+  document.getElementById('main').innerHTML=`<div class="aviso"><h2>O painel precisa do servidor</h2>
+    <p>Abra um terminal nesta pasta e rode <code>node server.js</code>. Depois acesse <code>http://localhost:3000/painel</code>.</p>
+    <p>Os celulares acessam as missões pelo endereço que o servidor mostra ao iniciar.</p></div>`;
+} else {
+  const h=location.hash.slice(1); if(ABAS.some(a=>a[0]===h)) ST.aba=h; // ex.: /painel#escutai abre direto na aba
+  render(); conectar();
+  setInterval(agendar,10000); // atualiza "ativos agora" e tempos
+}
+</script>
+</body>
+</html>
